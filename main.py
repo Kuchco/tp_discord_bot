@@ -36,15 +36,10 @@ async def on_message(message):
         'Gabo je na kávičke v cubicone.',
         'Gabo mešká !',
         'Juro ma zastúpi',
-        'I just wanna die'
     ]
 
     if message.content == 'Gabo!':
         response = random.choice(gabot_quotes)
-        await message.channel.send(response)
-
-    if message.content == '!kill_me':
-        response = "You are now dead!"
         await message.channel.send(response)
 
 client.run(TOKEN)

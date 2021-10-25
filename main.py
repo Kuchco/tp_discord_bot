@@ -32,17 +32,14 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    brooklyn_99_quotes = [
-        'I\'m the human form of the 💯 emoji.',
-        'Bingpot!',
-        (
-            'Cool. Cool cool cool cool cool cool cool, '
-            'no doubt no doubt no doubt no doubt.'
-        ),
+    gabot_quotes = [
+        'Gabo je na kávičke v cubicone.',
+        'Gabo mešká !',
+        'Juro ma zastúpi',
     ]
 
     if message.content == 'Gabo!':
-        response = random.choice(brooklyn_99_quotes)
+        response = random.choice(gabot_quotes)
         await message.channel.send(response)
 
 client.run(TOKEN)

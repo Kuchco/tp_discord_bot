@@ -34,7 +34,7 @@ async def on_message(message):
 
     gabot_quotes = [
         'Gabo je na kávičke v cubicone.',
-        'Gabo mešká !',
+        'Gabo mešká :( !',
         'Juro ma zastúpi',
     ]
 

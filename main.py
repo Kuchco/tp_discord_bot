@@ -3,6 +3,7 @@ import os
 
 import discord
 import random
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,32 +15,13 @@ intents.members = True
 client = discord.Client(intents=intents)
 
 @client.event
-async def on_ready():
-    for guild in client.guilds:
-        if guild.name == GUILD:
-            break
-
-    print(
-        f'{client.user} is connected to the following guild:\n'
-        f'{guild.name}(id: {guild.id})\n'
-    )
-
-    members = '\n - '.join([member.name for member in guild.members])
-    print(f'Guild Members:\n - {members}')
-
-@client.event
 async def on_message(message):
     if message.author == client.user:
         return
+    if message.content == "/role":
+        rol = '\n'.join([role.name for role in message.guild.roles])
+        # await message.channel.send(rol)
+        print(rol)
 
-    gabot_quotes = [
-        'Gabo je na kávičke v cubicone.',
-        'Gabo mešká :( !',
-        'Juro ma zastúpi',
-    ]
-
-    if message.content == 'Gabo!':
-        response = random.choice(gabot_quotes)
-        await message.channel.send(response)
 
 client.run(TOKEN)

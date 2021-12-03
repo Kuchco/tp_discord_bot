@@ -23,7 +23,7 @@ class Commands(commands.Cog):
         server_count = len(self.bot.guilds)
         member_count = len(set(self.bot.get_all_members()))
 
-        embed = discord.Embed(title=f'{self.bot.user.name} Stats', description='\uFEFF', colour=ctx.author.colour, timestamp=ctx.message.created_at)
+        embed = discord.Embed(title=f'{self.bot.user.name} - Pomáham moderovať školské discord serveri :angel:', description='\uFEFF', colour=ctx.author.colour, timestamp=ctx.message.created_at)
 
 
         embed.add_field(name='Python Version:', value = version_of_python)

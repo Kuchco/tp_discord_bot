@@ -13,7 +13,7 @@ print(f"{cwd}\n-----")
 
 # create secret file for tokens
 secret = json.load(open(cwd+'/bot_config/secret.json'))
-bot = commands.Bot(command_prefix='-', case_insensitive=True)
+bot = commands.Bot(command_prefix='-', case_insensitive=True, owner_id=897135412731052043)
 bot.config_token = secret['DISCORD_TOKEN']
 bot.config_guild = secret['DISCORD_GUILD']
 logging.basicConfig(level=logging.INFO)

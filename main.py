@@ -1,5 +1,5 @@
 # Libs
-import platform
+
 import os
 import discord
 from discord.ext import commands
@@ -56,10 +56,6 @@ async def on_ready():
 async def on_message(message):
     # Ignore messages sent by yourself
     if message.author.id == bot.user.id:
-        return
-
-    # A way to blacklist users from the bot by not processing commands if the author is in the blacklisted_users list
-    if message.author.id in bot.blacklisted_users:
         return
 
     await bot.process_commands(message)

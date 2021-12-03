@@ -31,7 +31,7 @@ class Commands(commands.Cog):
         embed.add_field(name='Total Guilds:', value=str(server_count))
         embed.add_field(name='Total Users:', value=str(member_count))
 
-        embed.set_footer(text=f"Carpe Noctem | {self.bot.user.name}")
+        embed.set_footer(text=f"zase meškám | {self.bot.user.name}")
         embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url)
 
         await ctx.send(embed=embed)

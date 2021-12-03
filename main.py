@@ -16,6 +16,7 @@ secret = json.load(open(cwd+'/bot_config/secret.json'))
 bot = commands.Bot(command_prefix='-', case_insensitive=True)
 bot.config_token = secret['DISCORD_TOKEN']
 bot.config_guild = secret['DISCORD_GUILD']
+GUILD = secret['DISCORD_GUILD']
 logging.basicConfig(level=logging.INFO)
 
 intents = discord.Intents.default()
@@ -49,8 +50,10 @@ bot.blacklisted_users = []
 
 @bot.event
 async def on_ready():
+
     print(f"-----\nLogged in as: {bot.user.name} : {bot.user.id}\n-----\nMy current prefix is: -\n-----")
     await bot.change_presence(activity=discord.Game(name=f"Ahoj, ja som {bot.user.name}.\na pomôžem vám na serveri!"))
+
 
 @bot.event
 async def on_message(message):
@@ -59,6 +62,8 @@ async def on_message(message):
         return
 
     await bot.process_commands(message)
+
+
 
 if __name__ == '__main__':
     # When running this file, if it is the 'main' file

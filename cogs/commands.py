@@ -36,37 +36,6 @@ class Commands(commands.Cog):
 
         await ctx.send(embed=embed)
 
-        @commands.command(aliases=['disconnect', 'close', 'stopbot'])
-        @commands.is_owner()
-        async def logout(self, ctx):
-            """
-            If the user running the command owns the bot then this will disconnect the bot from discord.
-            """
-            await ctx.send(f"Ahoj {ctx.author.mention}, odhlasujem sa :wave:")
-            await self.bot.logout()
-
-
-        @commands.command()
-        @commands.is_owner()
-        async def blacklist(self, ctx, user: discord.Member):
-            if ctx.message.author.id == user.id:
-                await ctx.send("Ahoj,nemôžeš seba dať na čiernu listinu!")
-                return
-
-            self.bot.blacklisted_users.append(user.id)
-            data = cogs._json.read_json("blacklist")
-            data["blacklistedUsers"].append(user.id)
-            cogs._json.write_json(data, "blacklist")
-            await ctx.send(f"Ahoj, si pridany {user.name}  na čiernej listine.")
-
-        @commands.command()
-        @commands.is_owner()
-        async def unblacklist(self, ctx, user: discord.Member):
-            self.bot.blacklisted_users.remove(user.id)
-            data = cogs._json.read_json("blacklist")
-            data["blacklistedUsers"].remove(user.id)
-            cogs._json.write_json(data, "blacklist")
-            await ctx.send(f"Hey, Zrušil som pre vás  {user.name} čiernu listinu.")
 
 def setup(bot):
     bot.add_cog(Commands(bot))

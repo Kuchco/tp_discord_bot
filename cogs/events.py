@@ -33,7 +33,7 @@ class Events(commands.Cog):
             # send an embed saying goodbye from our guild-
             channel = discord.utils.get(member.guild.text_channels, name='recording')
             if channel:
-                embed = discord.Embed(description='Ahojte všetci..', color=random.choice(self.bot.color_list))
+                embed = discord.Embed(description='Maj sa..', color=random.choice(self.bot.color_list))
                 embed.set_thumbnail(url=member.avatar_url)
                 embed.set_author(name=member.name, icon_url=member.avatar_url)
                 embed.set_footer(text=member.guild, icon_url=member.guild.icon_url)

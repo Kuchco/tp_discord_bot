@@ -30,7 +30,6 @@ class Commands(commands.Cog):
         embed.add_field(name='Discord.Py Version', value=dpy_version)
         embed.add_field(name='Total Guilds:', value=str(server_count))
         embed.add_field(name='Total Users:', value=str(member_count))
-        embed.add_field(name='Bot Developers:', value="<@271612318947868673>")
 
         embed.set_footer(text=f"Carpe Noctem | {self.bot.user.name}")
         embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url)
@@ -43,7 +42,7 @@ class Commands(commands.Cog):
             """
             If the user running the command owns the bot then this will disconnect the bot from discord.
             """
-            await ctx.send(f"Hey {ctx.author.mention}, I am now logging out :wave:")
+            await ctx.send(f"Ahoj {ctx.author.mention}, odhlasujem sa :wave:")
             await self.bot.logout()
 
 
@@ -51,14 +50,14 @@ class Commands(commands.Cog):
         @commands.is_owner()
         async def blacklist(self, ctx, user: discord.Member):
             if ctx.message.author.id == user.id:
-                await ctx.send("Hey, you cannot blacklist yourself!")
+                await ctx.send("Ahoj,nemôžeš seba dať na čiernu listinu!")
                 return
 
             self.bot.blacklisted_users.append(user.id)
             data = cogs._json.read_json("blacklist")
             data["blacklistedUsers"].append(user.id)
             cogs._json.write_json(data, "blacklist")
-            await ctx.send(f"Hey, I have blacklisted {user.name} for you.")
+            await ctx.send(f"Ahoj, si pridany {user.name}  na čiernej listine.")
 
         @commands.command()
         @commands.is_owner()
@@ -67,7 +66,7 @@ class Commands(commands.Cog):
             data = cogs._json.read_json("blacklist")
             data["blacklistedUsers"].remove(user.id)
             cogs._json.write_json(data, "blacklist")
-            await ctx.send(f"Hey, I have unblacklisted {user.name} for you.")
+            await ctx.send(f"Hey, Zrušil som pre vás  {user.name} čiernu listinu.")
 
 def setup(bot):
     bot.add_cog(Commands(bot))

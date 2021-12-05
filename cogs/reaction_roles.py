@@ -126,9 +126,9 @@ class Reactions(commands.Cog, name="ReactionRoles"):
             await ctx.send("This does not support more then 20 reaction roles per guild!")
             return
 
-        if not isinstance(emoji, discord.Emoji):
-            emoji = emojis.get(emoji)
-            emoji = emoji.pop()
+        # if not isinstance(emoji, discord.Emoji):
+        #     emoji = emojis.get(emoji)
+        #     emoji = emoji.pop()
 
         elif isinstance(emoji, discord.Emoji):
             if not emoji.is_usable():

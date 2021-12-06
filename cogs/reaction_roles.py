@@ -60,6 +60,7 @@ class Reactions(commands.Cog, name="ReactionRoles"):
         aliases=['rr'], invoke_without_command=True
     )
     @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
     async def reactionroles(self, ctx):
         await ctx.invoke(self.bot.get_command("help"), entity="reactionroles")
 

@@ -80,12 +80,7 @@ class Twitch(commands.Cog):
 
     @loop(seconds=90)
     async def check_twitch_notifications(self):
-        channel = self.bot.get_channel(902602095302148096)
         guilds = self.bot.guilds
-        if not channel:
-            print("No channel found")
-            return
-
         notifications = self.get_notification()
         for notif in notifications:
             title_pars = notif['title'].split(" ")

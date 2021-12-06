@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+import discord
 from discord.ext.tasks import loop
 from discord.ext import commands
 import requests
@@ -80,19 +81,29 @@ class Twitch(commands.Cog):
     @loop(seconds=90)
     async def check_twitch_notifications(self):
         channel = self.bot.get_channel(902602095302148096)
+        guilds = self.bot.guilds
         if not channel:
             print("No channel found")
             return
 
         notifications = self.get_notification()
-        print("notifications {}".format(notifications))
         for notif in notifications:
-            print("Almost there!")
-            await channel.send("Stream od {} práve začal s názvom {}".format(notif["user_name"], notif["title"]))
+            title_pars = notif['title'].split(" ")
+            for guild in guilds:
+                if title_pars[0][1:-1] in guild.name:
+                    for channel in guild.channels:
+                        if title_pars[1].lower() in channel.name.lower():
+                            embed = discord.Embed(
+                                title="Twitch stream upozornenie",
+                                description="{} {}".format(title_pars[1], title_pars[2]),
+                                colour=discord.Colour.purple()
+                            )
+                            tmp = title_pars[4] +" "+title_pars[5]
+                            embed.set_footer(text=tmp)
+                            embed.set_thumbnail(url=notif["thumbnail_url"])
+                            await channel.send(embed=embed)
 
-    @commands.command()
-    async def ping(self, ctx):
-        await ctx.send("Hello there!")
+
 
 def setup(bot):
     bot.add_cog(Twitch(bot))

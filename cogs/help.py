@@ -80,6 +80,7 @@ class Help(commands.Cog, name="Help command"):
     @commands.command(
         name="help", aliases=["h", "commands"], description="The help command!"
     )
+    @commands.has_guild_permissions(administrator=True)
     async def help_command(self, ctx, *, entity=None):
         if not entity:
             await self.setup_help_pag(ctx)

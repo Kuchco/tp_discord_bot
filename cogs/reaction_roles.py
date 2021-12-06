@@ -1,6 +1,6 @@
 import typing
 import discord
-
+import time
 import emojis
 from discord.ext import commands
 
@@ -60,6 +60,7 @@ class Reactions(commands.Cog, name="ReactionRoles"):
         aliases=['rr'], invoke_without_command=True
     )
     @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
     async def reactionroles(self, ctx):
         await ctx.invoke(self.bot.get_command("help"), entity="reactionroles")
 
@@ -74,7 +75,8 @@ class Reactions(commands.Cog, name="ReactionRoles"):
         try:
             await channel.send("testujem, či môžem poslať správu do tohto kanála", delete_after=0.05)
         except discord.HTTPException:
-            await ctx.send("Nemôžem ! Please give me perms and try again.", delete_after=30)
+            await ctx.send("Nemôžem ! prosím dajte mi práva ", delete_after=30)
+
             return
 
         embed = discord.Embed(title="Zvolte si Rolu!")

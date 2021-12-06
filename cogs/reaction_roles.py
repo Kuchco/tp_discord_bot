@@ -36,7 +36,7 @@ class Reactions(commands.Cog, name="ReactionRoles"):
         channel = await self.bot.fetch_channel(channel_id)
         message = await channel.fetch_message(message_id)
 
-        embed = discord.Embed(title="Reaction Roles!")
+        embed = discord.Embed(title="Zvolte si rolu reakciou!")
         await message.clear_reactions()
 
         desc = ""
@@ -63,22 +63,21 @@ class Reactions(commands.Cog, name="ReactionRoles"):
     async def reactionroles(self, ctx):
         await ctx.invoke(self.bot.get_command("help"), entity="reactionroles")
 
-    @reactionroles.command(name="channel")
+    @reactionroles.command(name="channel", description="nastavte kanál pre reaction roles")
     @commands.guild_only()
-    # @commands.has_guild_permissions(manage_channels=True)
+    @commands.has_guild_permissions(manage_channels=True)
     async def rr_channel(self, ctx, channel: discord.TextChannel = None):
-        """Set the reaction roles channel."""
         if channel is None:
-            await ctx.send("You did not give me a channel, therefore I will use the current one!")
+            await ctx.send("Nenastavili ste mi kanál, do ktorého to mám poslať, preto to pošlem do tohoto!")
 
         channel = channel or ctx.channel
         try:
-            await channel.send("testing if I can send messages here", delete_after=0.05)
+            await channel.send("testujem, či môžem poslať správu do tohto kanála", delete_after=0.05)
         except discord.HTTPException:
-            await ctx.send("I cannot send a message to that channel! Please give me perms and try again.", delete_after=30)
+            await ctx.send("Nemôžem ! Please give me perms and try again.", delete_after=30)
             return
 
-        embed = discord.Embed(title="Reaction Roles!")
+        embed = discord.Embed(title="Zvolte si Rolu!")
 
         desc = ""
         reaction_roles = await self.bot.reaction_roles.get_all()
@@ -100,11 +99,11 @@ class Reactions(commands.Cog, name="ReactionRoles"):
                 "is_enabled": True,
             }
         )
-        await ctx.send("That should be all setup for you!", delete_after=30)
+        await ctx.send("Malo by byť všetko nastavené :100: !", delete_after=30)
 
-    @reactionroles.command(name="toggle")
+    @reactionroles.command(name="toggle", description="zapnúť reakcie pre tento server")
     @commands.guild_only()
-    # @commands.has_guild_permissions(administrator=True)
+    @commands.has_guild_permissions(administrator=True)
     @is_setup()
     async def rr_toggle(self, ctx):
         """Toggle reaction roles for this guild."""
@@ -113,17 +112,17 @@ class Reactions(commands.Cog, name="ReactionRoles"):
         await self.bot.config.upsert(data)
 
         is_enabled = "enabled." if data["is_enabled"] else "disabled."
-        await ctx.send(f"I have toggled that for you! It is currently {is_enabled}")
+        await ctx.send(f"Funkcia reaction roles je zapnutá pre tento server {is_enabled}")
 
-    @reactionroles.command(name="add")
+    @reactionroles.command(name="add", description="pridať rolu do reaction roles")
     @commands.guild_only()
-    # @commands.has_guild_permissions(manage_roles=True)
+    @commands.has_guild_permissions(manage_roles=True)
     @is_setup()
     async def rr_add(self, ctx, emoji: typing.Union[discord.Emoji, str], *, role: discord.Role):
         """Add a new reaction role."""
         reacts = await self.get_current_reactions(ctx.guild.id)
         if len(reacts) >= 20:
-            await ctx.send("This does not support more then 20 reaction roles per guild!")
+            await ctx.send("Nepodporujem viac ako 20 rolí na tomto serveri, prepáčte!")
             return
 
         # if not isinstance(emoji, discord.Emoji):
@@ -132,18 +131,18 @@ class Reactions(commands.Cog, name="ReactionRoles"):
 
         elif isinstance(emoji, discord.Emoji):
             if not emoji.is_usable():
-                await ctx.send("I can't use that emoji")
+                await ctx.send("Nemôžem použiť tento emoji :cry: ")
                 return
 
         emoji = str(emoji)
         await self.bot.reaction_roles.upsert({"_id": emoji, "role": role.id, "guild_id": ctx.guild.id})
 
         await self.rebuild_role_embed(ctx.guild.id)
-        await ctx.send("That is added and good to go!")
+        await ctx.send("Rola bola pridaná :white_check_mark: !")
 
-    @reactionroles.command(name="remove")
+    @reactionroles.command(name="remove", description="vymazať rolu v reaction roles")
     @commands.guild_only()
-    # @commands.has_guild_permissions(manage_roles=True)
+    @commands.has_guild_permissions(manage_roles=True)
     @is_setup()
     async def rr_remove(self, ctx, emoji: typing.Union[discord.Emoji, str]):
         """Remove an existing reaction role"""
@@ -156,7 +155,7 @@ class Reactions(commands.Cog, name="ReactionRoles"):
         await self.bot.reaction_roles.delete(emoji)
 
         await self.rebuild_role_embed(ctx.guild.id)
-        await ctx.send("That should all done and removed for you!")
+        await ctx.send("Rola bola vymazaná z reaction roles :x: !")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

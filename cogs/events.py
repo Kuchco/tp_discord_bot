@@ -1,3 +1,5 @@
+import time
+
 import discord
 from discord.ext import commands
 import random
@@ -60,7 +62,9 @@ class Events(commands.Cog):
                     await ctx.send(
                         f' Musite čakať {int(h)} hodin, {int(m)} minut and {int(s)} sekund na použitie tohto prikazu!')
             elif isinstance(error, commands.CheckFailure):
+                time.sleep(2)
                 await ctx.send("Pozor! nemáte oprávnenia.")
+                time.sleep(1)
             raise error
 
 def setup(bot):

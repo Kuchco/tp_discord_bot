@@ -13,6 +13,7 @@ class Commands(commands.Cog):
         print("Commands Cog has been loaded\n-----")
 
     @commands.command()
+    @commands.has_guild_permissions(administrator=True)
     async def stats(self, ctx):
         """
         A usefull command that displays bot statistics.

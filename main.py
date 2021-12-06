@@ -93,6 +93,7 @@ async def on_ready():
 
 
 @bot.event
+@commands.has_guild_permissions(administrator=True)
 async def on_message(message):
     # Ignore messages sent by yourself
     if message.author.id == bot.user.id:

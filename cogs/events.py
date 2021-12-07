@@ -19,9 +19,9 @@ class Events(commands.Cog):
         async def on_member_join(self, member):
             # On member joins we find a channel called general and if it exists,
             # send an embed welcoming them to our guild
-            channel = discord.utils.get(member.guild.text_channels, name='recording')
+            channel = discord.utils.get(member.guild.text_channels, name='general')
             if channel:
-                embed = discord.Embed(description='Vitaj na našom serveri!', color=random.choice(self.bot.color_list))
+                embed = discord.Embed(description='Vitaj na našom serveri :wave: !', color=random.choice(self.bot.color_list))
                 embed.set_thumbnail(url=member.avatar_url)
                 embed.set_author(name=member.name, icon_url=member.avatar_url)
                 embed.set_footer(text=member.guild, icon_url=member.guild.icon_url)
@@ -33,9 +33,9 @@ class Events(commands.Cog):
         async def on_member_remove(self, member):
             # On member remove we find a channel called general and if it exists,
             # send an embed saying goodbye from our guild-
-            channel = discord.utils.get(member.guild.text_channels, name='recording')
+            channel = discord.utils.get(member.guild.text_channels, name='general')
             if channel:
-                embed = discord.Embed(description='Maj sa :(', color=random.choice(self.bot.color_list))
+                embed = discord.Embed(description='Maj sa :cry: ', color=random.choice(self.bot.color_list))
                 embed.set_thumbnail(url=member.avatar_url)
                 embed.set_author(name=member.name, icon_url=member.avatar_url)
                 embed.set_footer(text=member.guild, icon_url=member.guild.icon_url)

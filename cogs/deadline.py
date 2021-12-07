@@ -15,7 +15,7 @@ class Deadline(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(description="Príkaz na nastavenie upozornení deadline termínu")
     async def deadline(self, ctx, name, *args):
         try:
             if len(args[0]) > 8:
@@ -72,7 +72,7 @@ class Deadline(commands.Cog):
 
             remaining_time = input_datetime - today
             if remaining_time.seconds <= 3600:
-                await channel.send('Ostáva 1 hodina do konca termínu pre {}'.format(name))
+                await channel.send('Ostáva menej ako  1 hodina do konca termínu pre {}'.format(name))
                 return 1
 
             await asyncio.sleep(60)

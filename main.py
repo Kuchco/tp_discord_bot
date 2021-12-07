@@ -45,8 +45,8 @@ bot = commands.Bot(
     help_command=None,
     intents=intents,
 )
-bot.config_token = secret['DISCORD_TOKEN']
-bot.config_guild = secret['DISCORD_GUILD']
+bot.config_token = secret["DISCORD_TOKEN"]
+bot.config_guild = secret["DISCORD_GUILD"]
 bot.connection_url = secret["mongo"]
 
 
@@ -123,6 +123,7 @@ if __name__ == '__main__':
     bot.db = bot.mongo["discordBot"]
     bot.config = Document(bot.db, "config")
     bot.reaction_roles = Document(bot.db, "reaction_roles")
+    bot.point_system = Document(bot.db, "point_system")
     # When running this file, if it is the 'main' file
     # I.E its not being imported from another python file run this
     for file in os.listdir(cwd+"/cogs"):

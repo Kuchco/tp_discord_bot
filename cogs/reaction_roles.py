@@ -6,7 +6,7 @@ from discord.ext import commands
 
 
 class ReactionRolesNotSetup(commands.CommandError):
-    """Reaction roles are not setup for this guild."""
+    """Voľba rolí pomocou reakcii nie je nastavená na tomto serveri."""
     pass
 
 
@@ -108,7 +108,7 @@ class Reactions(commands.Cog, name="ReactionRoles"):
     @commands.has_guild_permissions(administrator=True)
     @is_setup()
     async def rr_toggle(self, ctx):
-        """Toggle reaction roles for this guild."""
+
         data = await self.bot.config.find(ctx.guild.id)
         data["is_enabled"] = not data["is_enabled"]
         await self.bot.config.upsert(data)
@@ -121,7 +121,7 @@ class Reactions(commands.Cog, name="ReactionRoles"):
     @commands.has_guild_permissions(manage_roles=True)
     @is_setup()
     async def rr_add(self, ctx, emoji: typing.Union[discord.Emoji, str], *, role: discord.Role):
-        """Add a new reaction role."""
+
         reacts = await self.get_current_reactions(ctx.guild.id)
         if len(reacts) >= 20:
             await ctx.send("Nepodporujem viac ako 20 rolí na tomto serveri, prepáčte!")
@@ -147,7 +147,6 @@ class Reactions(commands.Cog, name="ReactionRoles"):
     @commands.has_guild_permissions(manage_roles=True)
     @is_setup()
     async def rr_remove(self, ctx, emoji: typing.Union[discord.Emoji, str]):
-        """Remove an existing reaction role"""
         if not isinstance(emoji, discord.Emoji):
             emoji = emojis.get(emoji)
             emoji = emoji.pop()

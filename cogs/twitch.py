@@ -75,7 +75,7 @@ class Twitch(commands.Cog):
 
         return notifications
 
-    @loop(seconds=10)
+    @loop(seconds=90)
     async def check_twitch_notifications(self):
         guilds = self.bot.guilds
         notifications = self.get_notification()

@@ -1,6 +1,6 @@
 import typing
 import discord
-import time
+
 import emojis
 from discord.ext import commands
 

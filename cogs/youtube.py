@@ -4,7 +4,7 @@ from datetime import datetime
 import discord
 import requests
 from discord.ext.tasks import loop
-from googleapiclient.discovery import build  #todo: pip install google-api-python-client
+from googleapiclient.discovery import build
 from discord.ext import commands
 
 with open("cogs/yt.json") as config_file:

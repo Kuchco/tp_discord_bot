@@ -121,15 +121,11 @@ class Reactions(commands.Cog, name="ReactionRoles"):
     @commands.has_guild_permissions(manage_roles=True)
     @is_setup()
     async def rr_add(self, ctx, emoji: typing.Union[discord.Emoji, str], *, role: discord.Role):
-
+        data = await self.bot.config.find(ctx.guild.id)
         reacts = await self.get_current_reactions(ctx.guild.id)
         if len(reacts) >= 20:
             await ctx.send("Nepodporujem viac ako 20 rolí na tomto serveri, prepáčte!")
             return
-
-        # if not isinstance(emoji, discord.Emoji):
-        #     emoji = emojis.get(emoji)
-        #     emoji = emoji.pop()
 
         elif isinstance(emoji, discord.Emoji):
             if not emoji.is_usable():
@@ -137,7 +133,7 @@ class Reactions(commands.Cog, name="ReactionRoles"):
                 return
 
         emoji = str(emoji)
-        await self.bot.reaction_roles.upsert({"_id": emoji, "role": role.id, "guild_id": ctx.guild.id})
+        await self.bot.reaction_roles.upsert({"_id": emoji, "role": role.id, "guild_id": ctx.guild.id, "message_id": data.get("message_id")})
 
         await self.rebuild_role_embed(ctx.guild.id)
         await ctx.send("Rola bola pridaná :white_check_mark: !")
@@ -166,17 +162,19 @@ class Reactions(commands.Cog, name="ReactionRoles"):
             return
 
         guild_reaction_roles = await self.get_current_reactions(payload.guild_id)
+
         if str(payload.emoji) not in guild_reaction_roles:
             return
 
         guild = await self.bot.fetch_guild(payload.guild_id)
 
         emoji_data = await self.bot.reaction_roles.find(str(payload.emoji))
+
         role = guild.get_role(emoji_data["role"])
 
         member = await guild.fetch_member(payload.user_id)
 
-        if role not in member.roles:
+        if role not in member.roles and data["message_id"] == payload.message_id:
             await member.add_roles(role, reason="Reaction role.")
 
     @commands.Cog.listener()
@@ -197,7 +195,7 @@ class Reactions(commands.Cog, name="ReactionRoles"):
 
         member = await guild.fetch_member(payload.user_id)
 
-        if role in member.roles:
+        if role in member.roles and data["message_id"] == payload.message_id:
             await member.remove_roles(role, reason="Reaction role.")
 
 

@@ -81,7 +81,7 @@ bot.cwd = cwd
 async def on_ready():
     # On ready, print some details to standard out
     print(
-        f"-----\nLogged in as: {bot.user.name} : {bot.user.id}\n-----\nMy current prefix is: {bot.default_prefix}\n-----"
+        f"-----\nLogged in as: {bot.user.name} : {bot.user.id}\n-----\nMôj prefix je: {bot.default_prefix}\n-----"
     )
     await bot.change_presence(activity=discord.Game(name=f"Ahoj, ja som {bot.user.name}.\na pomôžem vám na serveri!"))
 
@@ -111,7 +111,7 @@ async def on_message(message):
             prefix = bot.default_prefix
         else:
             prefix = data["prefix"]
-        await message.channel.send(f"My prefix here is `{prefix}`", delete_after=15)
+        await message.channel.send(f"Môj prefix na tomto serveri je  `{prefix}`", delete_after=15)
 
 
 
@@ -124,6 +124,8 @@ if __name__ == '__main__':
     bot.db = bot.mongo["discordBot"]
     bot.config = Document(bot.db, "config")
     bot.reaction_roles = Document(bot.db, "reaction_roles")
+
+
     # When running this file, if it is the 'main' file
     # I.E its not being imported from another python file run this
     for file in os.listdir(cwd+"/cogs"):

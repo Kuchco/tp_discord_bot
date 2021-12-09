@@ -16,7 +16,7 @@ class Commands(commands.Cog):
     @commands.has_guild_permissions(administrator=True)
     async def stats(self, ctx):
         """
-        A usefull command that displays bot statistics.
+        Zobrazte si štatistiku Gabota
         """
         version_of_python = platform.python_version()
         dpy_version = discord.__version__

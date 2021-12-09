@@ -61,8 +61,6 @@ class Twitch(commands.Cog):
 
     def get_notification(self):
         stream = self.get_stream()
-        print("stream {}".format(stream))
-        print("online {}".format(self.online_users))
         notifications = []
         for user in stream:
             if user not in self.online_users:
@@ -74,29 +72,30 @@ class Twitch(commands.Cog):
                 if self.online_users[user] is None or started_at > self.online_users[user]:
                     notifications.append(stream[user])
                     self.online_users[user] = started_at
-            print("online users {}".format(self.online_users))
 
         return notifications
 
-    @loop(seconds=90)
+    @loop(seconds=10)
     async def check_twitch_notifications(self):
         guilds = self.bot.guilds
         notifications = self.get_notification()
+        if not guilds:
+            self.online_users["interes_group"] = None
         for notif in notifications:
             title_pars = notif['title'].split(" ")
             for guild in guilds:
-                if title_pars[0][1:-1] in guild.name:
+                if "TP" in guild.name:  #title_pars[0][1:-1] in guild.name or
                     for channel in guild.channels:
-                        if title_pars[1].lower() in channel.name.lower():
+                        if title_pars[1].lower() in channel.name.lower() or "test-bot" in channel.name.lower():
                             embed = discord.Embed(
                                 title="Twitch stream upozornenie",
                                 description="{} {}".format(title_pars[1], title_pars[2]),
                                 colour=discord.Colour.purple()
                             )
                             tmp = title_pars[4] +" "+title_pars[5]
-                            embed.set_footer(text=tmp)
-                            embed.set_thumbnail(url=notif["thumbnail_url"])
-                            await channel.send(embed=embed)
+                            embed.set_thumbnail(url=notif["thumbnail_url"].format(width=500,height=500))
+                            embed.set_footer(text="Stream začína o : "+tmp)
+                            await channel.send("@everyone", embed=embed)
 
 
 

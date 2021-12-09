@@ -32,7 +32,6 @@ class Twitch(commands.Cog):
         config["access_token"] = access_token
 
     def check_user(self):
-        #self.get_access_token()
         params = {
             "login": "INTERES_Group"
         }
@@ -86,7 +85,7 @@ class Twitch(commands.Cog):
             for guild in guilds:
                 if "TP" in guild.name:  #title_pars[0][1:-1] in guild.name or
                     for channel in guild.channels:
-                        if title_pars[1].lower() in channel.name.lower() or "test-bot" in channel.name.lower():
+                        if title_pars[1].lower() in channel.name.lower() or "test-bot" == channel.name.lower():
                             embed = discord.Embed(
                                 title="Twitch stream upozornenie",
                                 description="{} {}".format(title_pars[1], title_pars[2]),
@@ -96,7 +95,6 @@ class Twitch(commands.Cog):
                             embed.set_thumbnail(url=notif["thumbnail_url"].format(width=500,height=500))
                             embed.set_footer(text="Stream začína o : "+tmp)
                             await channel.send("@everyone", embed=embed)
-
 
 
 def setup(bot):

@@ -116,6 +116,7 @@ if __name__ == '__main__':
     bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(str(bot.connection_url))
     bot.db = bot.mongo["discordBot"]
     bot.config = Document(bot.db, "config")
+    bot.guild_question_channel = Document(bot.db, "guild_question_channel")
     bot.reaction_roles = Document(bot.db, "reaction_roles")
     bot.point_system = Document(bot.db, "point_system")
     bot.youtube = Document(bot.db, "youtube")

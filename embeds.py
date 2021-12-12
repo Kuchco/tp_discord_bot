@@ -1,5 +1,4 @@
 import datetime
-
 import discord
 
 embed = discord.Embed(
@@ -44,6 +43,7 @@ embed.add_field(
     inline=True
 )
 
+# noinspection PyUnresolvedReferences
 await ctx.send(
     content="This is a normal message to be sent alongside the embed",
     embed=embed
@@ -51,11 +51,7 @@ await ctx.send(
 
 # If you want to send a local file as the embed image:
 embed = discord.Embed()
-embed.set_image(
-    url="attachment://hello.png"
-)
+embed.set_image(url="attachment://hello.png")
 image = discord.File("hello.png")
-await ctx.send(
-    embed=embed,
-    file=image
-)
+# noinspection PyUnresolvedReferences
+await ctx.send(embed=embed, file=image)

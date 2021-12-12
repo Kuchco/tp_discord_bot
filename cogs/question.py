@@ -3,6 +3,10 @@ import time
 import discord.ext.commands.context
 from discord.ext import commands
 
+# TODO how to keep threads a live??? checking and pass message by bot near expiration???
+# TODO probably remove messages in question and answers channel on_message not from bot, ideal disable write into this channel
+# TODO add way how close reaction thread and store correct result/results
+
 
 class Question(commands.Cog):
     def __init__(self, bot):
@@ -17,7 +21,7 @@ class Question(commands.Cog):
     @commands.guild_only()
     async def question_create(self, context: discord.ext.commands.context.Context, question):
         channel = await self.__getQuestionChannel(context.guild)
-        question = discord.Embed(
+        question_embed = discord.Embed(
             color=self.bot.colors["BLUE"],
             description=f"{context.author.mention} is asking:\n\n" +
                         "***" + (question if question[-1] == "?" else question + "?").capitalize() + "***\n\n"
@@ -25,9 +29,10 @@ class Question(commands.Cog):
             title="Hi everyone, we need your help with the following question"
         )
 
-        question_message = await channel.send(embed=question)
-        self.bot.question.upsert({"_id": question_message.id, "last_activity": round(time.time())})
-        await channel.create_thread("Question No." + format(question_message.id), 24*60, question_message)
+        question_message = await channel.send(embed=question_embed)
+
+        await channel.create_thread("Question: " + (question[0:15].strip() + "...") if len(question) > 15 else question, 24*60, question_message)
+        await self.bot.question.upsert({"_id": question_message.id, "last_activity": round(time.time())})
         await context.message.delete()
 
     async def __getQuestionChannel(self, guild: discord.guild):
@@ -44,8 +49,8 @@ class Question(commands.Cog):
         return guild_channel
 
     async def __createQAndAChannel(self, guild: discord.guild):
-        channel = await guild.create_text_channel("question-and-answer")
-        # TODO probably set permissions, description, etc
+        channel = await guild.create_text_channel("active-questions")
+        await channel.edit(topic="Not resolved questions")
 
         return channel
 

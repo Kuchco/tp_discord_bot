@@ -45,9 +45,6 @@ async def on_message(message):
     if message.author.bot or message.author.id == bot.user.id:
         return
 
-    # if message.content == "!thread":
-    #     await message.channel.create_thread(name="Thread", minutes=60, message=message)
-
     if message.content.startswith(f"<@!{bot.user.id}>") and len(message.content) == len(f"<@!{bot.user.id}>"):
         data = await bot.config.get_by_id(message.guild.id)
         if not data or "prefix" not in data:

@@ -1,6 +1,7 @@
+import platform
+
 import discord
 from discord.ext import commands
-import platform
 
 
 class Commands(commands.Cog):

@@ -1,10 +1,12 @@
-import os
-import discord
-from discord.ext import commands
-import logging
-from pathlib import Path
 import json
+import logging
+import os
+from pathlib import Path
+
+import discord
 import motor.motor_asyncio
+from discord.ext import commands
+
 from utils.mongo import Document
 
 cwd = Path(__file__).parents[0]

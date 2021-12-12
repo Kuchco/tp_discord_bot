@@ -2,11 +2,11 @@ import json
 from datetime import datetime
 
 import discord
+from discord.ext import commands
 from discord.ext.tasks import loop
 # Installed by google-api-python-client
 # noinspection PyPackageRequirements
 from googleapiclient.discovery import build
-from discord.ext import commands
 
 with open("cogs/yt.json") as config_file:
     config = json.load(config_file)

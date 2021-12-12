@@ -1,6 +1,6 @@
 import typing
-import discord
 
+import discord
 import emojis
 from discord.ext import commands
 

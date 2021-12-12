@@ -2,8 +2,9 @@ import json
 from datetime import datetime
 
 import discord
-import requests
 from discord.ext.tasks import loop
+# Installed by google-api-python-client
+# noinspection PyPackageRequirements
 from googleapiclient.discovery import build
 from discord.ext import commands
 
@@ -12,14 +13,12 @@ with open("cogs/yt.json") as config_file:
 
 
 class Youtube(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
         self.youtube = build('youtube', 'v3', developerKey=config['api_key'])
         self.videos = {}
         self.db_videos = {}
         self.check_youtube_notifications.start()
-
 
     @commands.Cog.listener()
     async def on_ready(self):

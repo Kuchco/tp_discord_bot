@@ -1,3 +1,5 @@
+import time
+
 import discord.ext.commands.context
 from discord.ext import commands
 
@@ -5,9 +7,6 @@ from discord.ext import commands
 class Question(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-    # @commands.has_guild_permissions(administrator=True)
-    # @commands.has_guild_permissions(manage_roles=True)
 
     @commands.group(aliases=["q"], invoke_without_command=True, description="Príkaz na položenie otázky")
     @commands.guild_only()
@@ -27,7 +26,8 @@ class Question(commands.Cog):
         )
 
         question_message = await channel.send(embed=question)
-        # TODO create thread if possible
+        self.bot.question.upsert({"_id": question_message.id, "last_activity": round(time.time())})
+        await channel.create_thread("Question No." + format(question_message.id), 24*60, question_message)
         await context.message.delete()
 
     async def __getQuestionChannel(self, guild: discord.guild):

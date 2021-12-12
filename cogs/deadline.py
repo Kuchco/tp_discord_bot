@@ -1,17 +1,11 @@
-# bot.py
 import asyncio
 import datetime
-import os
 
-import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 from datetime import datetime
-from datetime import date
-import random
 
 
 class Deadline(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
 

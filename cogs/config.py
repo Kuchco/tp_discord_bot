@@ -22,10 +22,10 @@ class Config(commands.Cog):
             f"Prefix bol nastavený na  `{prefix}`. Použite  `{prefix}prefix [prefix]` na zmenenie znovu!"
         )
 
-    @commands.command(name="deleteprefix", aliases=["dp"], description="Vymazať prefixy !")
+    @commands.command(name="delete_prefix", aliases=["dp"], description="Vymazať prefixy !")
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
-    async def deleteprefix(self, ctx):
+    async def delete_prefix(self, ctx):
         await self.bot.config.unset({"_id": ctx.guild.id, "prefix": 1})
         await ctx.send("prefix bol zmenený na defaultný na tomto serveri")
 

@@ -13,7 +13,7 @@ class Pag(Paginator):
 
 
 async def GetMessage(
-    bot, ctx, contentOne="Default Message", contentTwo="\uFEFF", timeout=100
+    bot, ctx, content_one="Default Message", content_two="\uFEFF", timeout=100
 ):
     """
     This function sends an embed containing the params and then waits for a message to return
@@ -29,8 +29,8 @@ async def GetMessage(
     or
      - False (bool) : If a timeout occurs
     """
-    embed = discord.Embed(title=f"{contentOne}", description=f"{contentTwo}",)
-    sent = await ctx.send(embed=embed)
+    embed = discord.Embed(title=f"{content_one}", description=f"{content_two}")
+    await ctx.send(embed=embed)
     try:
         msg = await bot.wait_for(
             "message",

@@ -1,5 +1,3 @@
-# Libs
-
 import os
 import discord
 from discord.ext import commands
@@ -13,20 +11,20 @@ cwd = Path(__file__).parents[0]
 cwd = str(cwd)
 print(f"{cwd}\n-----")
 
-async def get_prefix(bot, message):
-    # If dm's
+
+async def get_prefix(discord_bot, message):
     if not message.guild:
-        return commands.when_mentioned_or(bot.default_prefix)(bot, message)
+        return commands.when_mentioned_or(discord_bot.default_prefix)(discord_bot, message)
 
     try:
-        data = await bot.config.find(message.guild.id)
+        data = await discord_bot.config.find(message.guild.id)
 
-        # Make sure we have a useable prefix
+        # Make sure we have a usable prefix
         if not data or "prefix" not in data:
-            return commands.when_mentioned_or(bot.default_prefix)(bot, message)
-        return commands.when_mentioned_or(data["prefix"])(bot, message)
+            return commands.when_mentioned_or(discord_bot.default_prefix)(discord_bot, message)
+        return commands.when_mentioned_or(data["prefix"])(discord_bot, message)
     except:
-        return commands.when_mentioned_or(bot.default_prefix)(bot, message)
+        return commands.when_mentioned_or(discord_bot.default_prefix)(discord_bot, message)
 
 
 default_prefix = "-"
@@ -48,11 +46,7 @@ bot = commands.Bot(
 bot.config_token = secret['DISCORD_TOKEN']
 bot.config_guild = secret['DISCORD_GUILD']
 bot.connection_url = secret["mongo"]
-
-
 bot.default_prefix = default_prefix
-
-
 bot.colors = {
   'WHITE': 0xFFFFFF,
   'AQUA': 0x1ABC9C,
@@ -77,6 +71,7 @@ bot.colors = {
 bot.color_list = [c for c in bot.colors.values()]
 bot.cwd = cwd
 
+
 @bot.event
 async def on_ready():
     # On ready, print some details to standard out
@@ -87,7 +82,6 @@ async def on_ready():
 
     for document in await bot.config.get_all():
         print(document)
-
 
     print("Initialized Database\n-----")
 
@@ -113,10 +107,7 @@ async def on_message(message):
             prefix = data["prefix"]
         await message.channel.send(f"Môj prefix na tomto serveri je  `{prefix}`", delete_after=15)
 
-
-
     await bot.process_commands(message)
-
 
 
 if __name__ == '__main__':
@@ -132,5 +123,3 @@ if __name__ == '__main__':
         if file.endswith(".py") and not file.startswith("_"):
             bot.load_extension(f"cogs.{file[:-3]}")
     bot.run(bot.config_token)
-
-

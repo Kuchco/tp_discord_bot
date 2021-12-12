@@ -1,7 +1,7 @@
 import discord
-import typing
 
 from discord.ext import commands
+
 
 class Points(commands.Cog, name="Points"):
     def __init__(self, bot):
@@ -11,9 +11,7 @@ class Points(commands.Cog, name="Points"):
     async def on_ready(self):
         print("Points Cog has been loaded\n-----")
 
-    @commands.group(
-        aliases=['points'], invoke_without_command=True
-    )
+    @commands.group(aliases=['points'], invoke_without_command=True)
     @commands.guild_only()
     async def pts(self, ctx):
         await ctx.invoke(self.bot.get_command("help"), entity="points")
@@ -21,7 +19,7 @@ class Points(commands.Cog, name="Points"):
     @commands.has_role('test')
     @pts.command(name="add")
     @commands.guild_only()
-    async def pts_add(self, ctx, user: discord.User=None, *args):
+    async def pts_add(self, ctx, user: discord.User = None, *args):
         if not user:
             await ctx.send("No user selected")
         else:
@@ -39,9 +37,5 @@ class Points(commands.Cog, name="Points"):
             await ctx.send('Body: {}'.format(data['points']))
 
 
-
-
-
 def setup(bot):
     bot.add_cog(Points(bot))
-

@@ -1,10 +1,10 @@
+import asyncio
 import string
 import time
 
 import discord.ext.commands.context
 from discord.ext import commands
 
-# TODO how to keep threads a live??? checking and pass message by bot near expiration???
 # TODO add way how close reaction thread and store correct result/results
 
 
@@ -18,7 +18,18 @@ class Question(commands.Cog):
 
         self.channelsCategoryName = "Question-bot channels"
         self.channelsRoleName = "questions-manager"
+
+        self.inactiveThreadDurationInS = 24 * 60 * 60
+        self.inactiveThreadCheckEveryS = 60 * 60
+        self.inactiveThreadReminderBeforeExpirationInS = self.inactiveThreadCheckEveryS * 3
+
+        # TODO for testing purpose, keep until reminder into thread is implemented
+        # self.inactiveThreadDurationInS = 60 * 60
+        # self.inactiveThreadCheckEveryS = 20
+        # self.inactiveThreadReminderBeforeExpirationInS = 58 * 60
+
         self.bot = bot
+        self.bot.loop.create_task(self.threadActivityChecker())
 
     @commands.group(aliases=["q"], invoke_without_command=True, description="Príkaz na položenie otázky")
     @commands.guild_only()
@@ -39,8 +50,14 @@ class Question(commands.Cog):
 
         question_message = await channel.send(embed=question_embed)
 
-        await channel.create_thread("Question: " + (question[0:15].strip() + "...") if len(question) > 15 else question, 24*60, question_message)
-        await self.bot.question.upsert({"_id": question_message.id, "last_activity": round(time.time())})
+        await channel.create_thread(
+            "Question: " + (question[0:15].strip() + "...") if len(question) > 15 else question, self.inactiveThreadDurationInS/60, question_message
+        )
+
+        await self.bot.question.upsert({
+            "_id": question_message.id, "guild_id": context.guild.id, "last_activity": round(time.time())
+        })
+
         await context.message.delete()
 
     async def __createCategory(self, guild: discord.guild):
@@ -116,6 +133,16 @@ class Question(commands.Cog):
         await (await guild.fetch_member(self.bot.user.id)).add_roles(question_manager_role)
 
         return question_manager_role
+
+    async def threadActivityChecker(self):
+        while True:
+            questions = await self.bot.question.get_all()
+            for question in questions:
+                if question["last_activity"] + self.inactiveThreadDurationInS - self.inactiveThreadReminderBeforeExpirationInS <= round(time.time()):
+                    print("to remember" + format(question["_id"]))
+                    # TODO Send via bot remember message into that thread
+
+            await asyncio.sleep(self.inactiveThreadCheckEveryS)
 
 
 def setup(bot):

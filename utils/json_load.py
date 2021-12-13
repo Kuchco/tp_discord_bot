@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+
 def get_path():
     """
     A function to get the current path to bot.py
@@ -10,6 +11,7 @@ def get_path():
     cwd = Path(__file__).parents[1]
     cwd = str(cwd)
     return cwd
+
 
 def read_json(filename):
     """
@@ -23,6 +25,7 @@ def read_json(filename):
     with open(cwd+'/bot_config/'+filename+'.json', 'r') as file:
         data = json.load(file)
     return data
+
 
 def write_json(data, filename):
     """

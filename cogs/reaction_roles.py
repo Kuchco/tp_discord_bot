@@ -1,6 +1,6 @@
 import typing
-import discord
 
+import discord
 import emojis
 from discord.ext import commands
 
@@ -56,15 +56,13 @@ class Reactions(commands.Cog, name="ReactionRoles"):
         data = map(lambda r: r["_id"], data)
         return list(data)
 
-    @commands.group(
-        aliases=['rr'], invoke_without_command=True, description="prikazy na reaction roles"
-    )
+    @commands.group(aliases=['rr'], invoke_without_command=True, description="prikazy na reaction roles")
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
-    async def Reaction_roles(self, ctx):
+    async def reaction_roles(self, ctx):
         await ctx.invoke(self.bot.get_command("help"), entity="Reaction_roles")
 
-    @Reaction_roles.command(name="channel", description="nastavte kanál pre reaction roles")
+    @reaction_roles.command(name="channel", description="nastavte kanál pre reaction roles")
     @commands.guild_only()
     @commands.has_guild_permissions(manage_channels=True)
     async def rr_channel(self, ctx, channel: discord.TextChannel = None):
@@ -93,17 +91,15 @@ class Reactions(commands.Cog, name="ReactionRoles"):
         for item in reaction_roles:
             await m.add_reaction(item["_id"])
 
-        await self.bot.config.upsert(
-            {
-                "_id": ctx.guild.id,
-                "message_id": m.id,
-                "channel_id": m.channel.id,
-                "is_enabled": True,
-            }
-        )
+        await self.bot.config.upsert({
+            "_id": ctx.guild.id,
+            "message_id": m.id,
+            "channel_id": m.channel.id,
+            "is_enabled": True,
+        })
         await ctx.send("Malo by byť všetko nastavené :100: !", delete_after=30)
 
-    @Reaction_roles.command(name="toggle", description="zapnúť reakcie pre tento server")
+    @reaction_roles.command(name="toggle", description="zapnúť reakcie pre tento server")
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     @is_setup()
@@ -116,7 +112,7 @@ class Reactions(commands.Cog, name="ReactionRoles"):
         is_enabled = "enabled." if data["is_enabled"] else "disabled."
         await ctx.send(f"Funkcia reaction roles je zapnutá pre tento server {is_enabled}")
 
-    @Reaction_roles.command(name="add", description="pridať rolu do reaction roles")
+    @reaction_roles.command(name="add", description="pridať rolu do reaction roles")
     @commands.guild_only()
     @commands.has_guild_permissions(manage_roles=True)
     @is_setup()
@@ -138,7 +134,7 @@ class Reactions(commands.Cog, name="ReactionRoles"):
         await self.rebuild_role_embed(ctx.guild.id)
         await ctx.send("Rola bola pridaná :white_check_mark: !")
 
-    @Reaction_roles.command(name="remove", description="vymazať rolu v reaction roles")
+    @reaction_roles.command(name="remove", description="vymazať rolu v reaction roles")
     @commands.guild_only()
     @commands.has_guild_permissions(manage_roles=True)
     @is_setup()
@@ -156,47 +152,37 @@ class Reactions(commands.Cog, name="ReactionRoles"):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        data = await self.bot.config.find(payload.guild_id)
-
-        if not payload.guild_id or not data or not data.get("is_enabled"):
+        [data, member, role] = await self.__onReactionChange(payload)
+        if data is None:
             return
-
-        guild_reaction_roles = await self.get_current_reactions(payload.guild_id)
-
-        if str(payload.emoji) not in guild_reaction_roles:
-            return
-
-        guild = await self.bot.fetch_guild(payload.guild_id)
-
-        emoji_data = await self.bot.reaction_roles.find(str(payload.emoji))
-
-        role = guild.get_role(emoji_data["role"])
-
-        member = await guild.fetch_member(payload.user_id)
 
         if role not in member.roles and data["message_id"] == payload.message_id:
             await member.add_roles(role, reason="Reaction role.")
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
-        data = await self.bot.config.find(payload.guild_id)
-
-        if not payload.guild_id or not data or not data.get("is_enabled"):
+        [data, member, role] = await self.__onReactionChange(payload)
+        if data is None:
             return
-
-        guild_reaction_roles = await self.get_current_reactions(payload.guild_id)
-        if str(payload.emoji) not in guild_reaction_roles:
-            return
-
-        guild = await self.bot.fetch_guild(payload.guild_id)
-
-        emoji_data = await self.bot.reaction_roles.find(str(payload.emoji))
-        role = guild.get_role(emoji_data["role"])
-
-        member = await guild.fetch_member(payload.user_id)
 
         if role in member.roles and data["message_id"] == payload.message_id:
             await member.remove_roles(role, reason="Reaction role.")
+
+    async def __onReactionChange(self, payload) -> [any, any, any]:
+        data = await self.bot.config.find(payload.guild_id)
+        if not payload.guild_id or not data or not data.get("is_enabled"):
+            return [None, None, None]
+
+        guild_reaction_roles = await self.get_current_reactions(payload.guild_id)
+        if str(payload.emoji) not in guild_reaction_roles:
+            return [None, None, None]
+
+        guild = await self.bot.fetch_guild(payload.guild_id)
+        emoji_data = await self.bot.reaction_roles.find(str(payload.emoji))
+        role = guild.get_role(emoji_data["role"])
+        member = await guild.fetch_member(payload.user_id)
+
+        return [data, member, role]
 
 
 def setup(bot):

@@ -1,12 +1,14 @@
 import json
 from datetime import datetime
+
 import discord
-from discord.ext.tasks import loop
-from discord.ext import commands
 import requests
+from discord.ext import commands
+from discord.ext.tasks import loop
 
 with open("cogs/config.json") as config_file:
     config = json.load(config_file)
+
 
 class Twitch(commands.Cog):
 
@@ -83,7 +85,7 @@ class Twitch(commands.Cog):
         for notif in notifications:
             title_pars = notif['title'].split(" ")
             for guild in guilds:
-                if "TP" in guild.name:  #title_pars[0][1:-1] in guild.name or
+                if "TP" in guild.name:  # title_pars[0][1:-1] in guild.name or
                     for channel in guild.channels:
                         if title_pars[1].lower() in channel.name.lower() or "test-bot" == channel.name.lower():
                             embed = discord.Embed(
@@ -91,8 +93,8 @@ class Twitch(commands.Cog):
                                 description="{} {}".format(title_pars[1], title_pars[2]),
                                 colour=discord.Colour.purple()
                             )
-                            tmp = title_pars[4] +" "+title_pars[5]
-                            embed.set_thumbnail(url=notif["thumbnail_url"].format(width=500,height=500))
+                            tmp = title_pars[4] + " " + title_pars[5]
+                            embed.set_thumbnail(url=notif["thumbnail_url"].format(width=500, height=500))
                             embed.set_footer(text="Stream začína o : "+tmp)
                             await channel.send("@everyone", embed=embed)
 

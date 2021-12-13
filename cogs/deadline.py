@@ -72,7 +72,7 @@ class Deadline(commands.Cog):
 
             remaining_time = input_datetime - today
             if remaining_time.seconds <= 3600:
-                await channel.send('Ostáva 1 hodina do konca termínu pre {}'.format(name))
+                await channel.send('Ostáva menej ako jedna hodina do konca termínu pre {}'.format(name))
                 return 1
 
             await asyncio.sleep(60)

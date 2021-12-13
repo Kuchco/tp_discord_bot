@@ -1,32 +1,32 @@
-# Libs
-
-import os
-import discord
-from discord.ext import commands
-import logging
-from pathlib import Path
 import json
+import logging
+import os
+from pathlib import Path
+
+import discord
 import motor.motor_asyncio
+from discord.ext import commands
+
 from utils.mongo import Document
 
 cwd = Path(__file__).parents[0]
 cwd = str(cwd)
 print(f"{cwd}\n-----")
 
-async def get_prefix(bot, message):
-    # If dm's
+
+async def get_prefix(discord_bot, message):
     if not message.guild:
-        return commands.when_mentioned_or(bot.default_prefix)(bot, message)
+        return commands.when_mentioned_or(discord_bot.default_prefix)(discord_bot, message)
 
     try:
-        data = await bot.config.find(message.guild.id)
+        data = await discord_bot.config.find(message.guild.id)
 
-        # Make sure we have a useable prefix
+        # Make sure we have a usable prefix
         if not data or "prefix" not in data:
-            return commands.when_mentioned_or(bot.default_prefix)(bot, message)
-        return commands.when_mentioned_or(data["prefix"])(bot, message)
+            return commands.when_mentioned_or(discord_bot.default_prefix)(discord_bot, message)
+        return commands.when_mentioned_or(data["prefix"])(discord_bot, message)
     except:
-        return commands.when_mentioned_or(bot.default_prefix)(bot, message)
+        return commands.when_mentioned_or(discord_bot.default_prefix)(discord_bot, message)
 
 
 default_prefix = "-"
@@ -48,11 +48,7 @@ bot = commands.Bot(
 bot.config_token = secret['DISCORD_TOKEN']
 bot.config_guild = secret['DISCORD_GUILD']
 bot.connection_url = secret["mongo"]
-
-
 bot.default_prefix = default_prefix
-
-
 bot.colors = {
   'WHITE': 0xFFFFFF,
   'AQUA': 0x1ABC9C,
@@ -77,17 +73,17 @@ bot.colors = {
 bot.color_list = [c for c in bot.colors.values()]
 bot.cwd = cwd
 
+
 @bot.event
 async def on_ready():
     # On ready, print some details to standard out
     print(
-        f"-----\nLogged in as: {bot.user.name} : {bot.user.id}\n-----\nMy current prefix is: {bot.default_prefix}\n-----"
+        f"-----\nLogged in as: {bot.user.name} : {bot.user.id}\n-----\nMôj prefix je: {bot.default_prefix}\n-----"
     )
     await bot.change_presence(activity=discord.Game(name=f"Ahoj, ja som {bot.user.name}.\na pomôžem vám na serveri!"))
 
     for document in await bot.config.get_all():
         print(document)
-
 
     print("Initialized Database\n-----")
 
@@ -111,12 +107,9 @@ async def on_message(message):
             prefix = bot.default_prefix
         else:
             prefix = data["prefix"]
-        await message.channel.send(f"My prefix here is `{prefix}`", delete_after=15)
-
-
+        await message.channel.send(f"Môj prefix na tomto serveri je  `{prefix}`", delete_after=15)
 
     await bot.process_commands(message)
-
 
 
 if __name__ == '__main__':
@@ -124,11 +117,11 @@ if __name__ == '__main__':
     bot.db = bot.mongo["discordBot"]
     bot.config = Document(bot.db, "config")
     bot.reaction_roles = Document(bot.db, "reaction_roles")
+    bot.point_system = Document(bot.db, "point_system")
+    bot.youtube = Document(bot.db, "youtube")
     # When running this file, if it is the 'main' file
     # I.E its not being imported from another python file run this
     for file in os.listdir(cwd+"/cogs"):
         if file.endswith(".py") and not file.startswith("_"):
             bot.load_extension(f"cogs.{file[:-3]}")
     bot.run(bot.config_token)
-
-

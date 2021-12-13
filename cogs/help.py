@@ -1,7 +1,7 @@
-# Requires pip install buttons
 from discord.ext import commands
 
 from utils.util import Pag
+
 
 class Help(commands.Cog, name="Help command"):
     def __init__(self, bot):
@@ -35,8 +35,8 @@ class Help(commands.Cog, name="Help command"):
 
         return self.return_sorted_commands(filtered)
 
-    def return_sorted_commands(self, commandList):
-        return sorted(commandList, key=lambda x: x.name)
+    def return_sorted_commands(self, command_list):
+        return sorted(command_list, key=lambda x: x.name)
 
     async def setup_help_pag(self, ctx, entity=None, title=None):
         entity = entity or self.bot
@@ -56,13 +56,13 @@ class Help(commands.Cog, name="Help command"):
             filtered_commands = await self.return_filtered_commands(entity, ctx)
 
         for i in range(0, len(filtered_commands), self.cmds_per_page):
-            next_commands = filtered_commands[i : i + self.cmds_per_page]
+            next_commands = filtered_commands[i: i + self.cmds_per_page]
             commands_entry = ""
 
             for cmd in next_commands:
                 desc = cmd.short_doc or cmd.description
                 signature = self.get_command_signature(cmd, ctx)
-                subcommand = "Has subcommands" if hasattr(cmd, "all_commands") else ""
+                subcommand = "Má ďalšie príkazy" if hasattr(cmd, "all_commands") else ""
 
                 commands_entry += (
                     f"• **__{cmd.name}__**\n```\n{signature}\n```\n{desc}\n"
@@ -77,9 +77,7 @@ class Help(commands.Cog, name="Help command"):
     async def on_ready(self):
         print(f"{self.__class__.__name__} cog has been loaded\n-----")
 
-    @commands.command(
-        name="help", aliases=["h", "commands"], description="The help command!"
-    )
+    @commands.command(name="help", aliases=["h", "commands"], description="Help príkaz!")
     @commands.has_guild_permissions(administrator=True)
     async def help_command(self, ctx, *, entity=None):
         if not entity:
@@ -96,7 +94,7 @@ class Help(commands.Cog, name="Help command"):
                     await self.setup_help_pag(ctx, command, command.name)
 
                 else:
-                    await ctx.send("Entity not found.")
+                    await ctx.send("Entita sa nenašla.")
 
 
 def setup(bot):

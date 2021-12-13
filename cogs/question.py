@@ -51,7 +51,8 @@ class Question(commands.Cog):
         question_message = await channel.send(embed=question_embed)
 
         await channel.create_thread(
-            "Question: " + (question[0:15].strip() + "...") if len(question) > 15 else question, self.inactiveThreadDurationInS/60, question_message
+            name="Question #" + ((question[0:15].strip() + "...") if len(question) > 15 else question),
+            message=question_message, auto_archive_duration=self.inactiveThreadDurationInS / 60,
         )
 
         await self.bot.question.upsert({

@@ -5,7 +5,6 @@ import discord.ext.commands.context
 from discord.ext import commands
 
 # TODO how to keep threads a live??? checking and pass message by bot near expiration???
-# TODO probably remove messages in question and answers channel on_message not from bot, ideal disable write into this channel
 # TODO add way how close reaction thread and store correct result/results
 
 
@@ -18,6 +17,7 @@ class Question(commands.Cog):
         self.archivedChannelTopic = "This channel is archive of resolved questions"
 
         self.channelsCategoryName = "Question-bot channels"
+        self.channelsRoleName = "questions-manager"
         self.bot = bot
 
     @commands.group(aliases=["q"], invoke_without_command=True, description="Príkaz na položenie otázky")
@@ -46,26 +46,21 @@ class Question(commands.Cog):
     async def __createCategory(self, guild: discord.guild):
         return await guild.create_category(self.channelsCategoryName, position=0)
 
-    async def __createChannel(self, guild, category, name: string, topic: string):
-        channel = await guild.create_text_channel(name)
-        await channel.edit(category=category, topic=topic)
+    async def __createChannel(self, guild, category, name: string, question_manager_role, topic: string):
+        channel = await guild.create_text_channel(name, category=category, topic=topic)
+
+        await channel.set_permissions(question_manager_role, administrator=True)
+        await channel.set_permissions(
+            guild.default_role,
+            administrator=False,
+            manage_channels=False,
+            manage_permissions=False,
+            manage_messages=False,
+            read_messages=True,
+            send_messages=False
+        )
 
         return channel
-
-    async def __createChannels(self, guild: discord.guild):
-        category = await self.__getChannelCategory(guild)
-        active_channel = await self.__createChannel(
-            guild, category, self.activeChannelName, self.activeChannelTopic
-        )
-        archived_channel = await self.__createChannel(
-            guild, category, self.archivedChannelName, self.archivedChannelTopic
-        )
-
-        await self.bot.guild_question_channel.upsert({
-            "active_channel_id": active_channel.id, "archived_channel_id": archived_channel.id, "_id": guild.id
-        })
-
-        return [category, active_channel, archived_channel]
 
     async def __getChannelCategory(self, guild: discord.guild):
         for category in guild.categories:
@@ -82,9 +77,45 @@ class Question(commands.Cog):
             active_channel = guild.get_channel(channel_record["active_channel_id"])
 
         if active_channel is None:
-            [_, active_channel, _] = await self.__createChannels(guild)
+            [_, active_channel, _] = await self.__setup(guild)
 
         return active_channel
+
+    async def __setup(self, guild: discord.guild):
+        category = await self.__getChannelCategory(guild)
+        question_manager_role = await self.__setupRole(guild)
+
+        active_channel = await self.__createChannel(
+            guild, category, self.activeChannelName, question_manager_role, self.activeChannelTopic
+        )
+        archived_channel = await self.__createChannel(
+            guild, category, self.archivedChannelName, question_manager_role, self.archivedChannelTopic
+        )
+
+        await self.bot.guild_question_channel.upsert({
+            "active_channel_id": active_channel.id, "archived_channel_id": archived_channel.id, "_id": guild.id
+        })
+
+        return [category, active_channel, archived_channel]
+
+    async def __setupRole(self, guild: discord.guild):
+        question_manager_role = None
+        for role in guild.roles:
+            if role.name == self.channelsRoleName:
+                question_manager_role = role
+                break
+
+        if question_manager_role is None:
+            question_manager_role = await guild.create_role(
+                colour=self.bot.colors["WHITE"],
+                hoist=True,
+                name=self.channelsRoleName,
+                permissions=discord.Permissions.all()
+            )
+
+        await (await guild.fetch_member(self.bot.user.id)).add_roles(question_manager_role)
+
+        return question_manager_role
 
 
 def setup(bot):

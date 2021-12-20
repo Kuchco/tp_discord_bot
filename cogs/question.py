@@ -36,6 +36,21 @@ class Question(BaseCommand):
     async def question(self, ctx):
         await ctx.invoke(self.bot.get_command("help"), entity="question")
 
+    @question.command(name="cancel", description="cancel question, use inside question thread")
+    @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
+    async def question_cancel(self, context: discord.ext.commands.context.Context):
+        question = await self.bot.question.find_by_id(context.channel.id)
+        if question is not None:
+            await context.channel.parent.get_partial_message(question["_id"]).delete()
+            await context.channel.delete()
+            await self.bot.question.delete(context.channel.id)
+        else:
+            await context.channel.send(embed=discord.Embed(
+                color=self.bot.colors["RED"],
+                title="Usable only in question thread"
+            ))
+
     @question.command(aliases=["c"], name="create", description="creates new question, wrap question into \" for question with spaces")
     @commands.guild_only()
     async def question_create(self, context: discord.ext.commands.context.Context, question):

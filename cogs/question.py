@@ -6,10 +6,12 @@ import discord.ext.commands.context
 from discord.ext import commands
 
 # TODO add way how close reaction thread and store correct result/results
+from core.base_command import BaseCommand
 
 
-class Question(commands.Cog):
+class Question(BaseCommand):
     def __init__(self, bot):
+        super().__init__(bot)
         self.activeChannelName = "active-questions"
         self.activeChannelTopic = "This channel contains not resolved questions"
 
@@ -20,16 +22,13 @@ class Question(commands.Cog):
         self.channelsRoleName = "questions-manager"
 
         self.inactiveThreadDurationInS = 24 * 60 * 60
-        self.inactiveThreadCheckEveryS = 60 * 60
-        self.inactiveThreadReminderBeforeExpirationInS = self.inactiveThreadCheckEveryS * 3
+        self.inactiveThreadCheckEveryInS = 60 * 60
+        self.inactiveThreadReminderBeforeExpirationInS = self.inactiveThreadCheckEveryInS * 3
 
-        # TODO for testing purpose, keep until reminder into thread is implemented
-        # self.inactiveThreadDurationInS = 60 * 60
-        # self.inactiveThreadCheckEveryS = 20
-        # self.inactiveThreadReminderBeforeExpirationInS = 58 * 60
-
-        self.bot = bot
-        self.bot.loop.create_task(self.threadActivityChecker())
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await super().on_ready()
+        await self.__start_thread_activity_checker()
 
     @commands.group(aliases=["q"], invoke_without_command=True, description="Príkaz na položenie otázky")
     @commands.guild_only()
@@ -56,10 +55,48 @@ class Question(commands.Cog):
         )
 
         await self.bot.question.upsert({
-            "_id": question_message.id, "guild_id": context.guild.id, "last_activity": round(time.time())
+            "_id": question_message.id, "guild_id": context.guild.id, "last_activity": round(time.time()), "remind_msg_id": None
         })
 
         await context.message.delete()
+
+    async def __check_threads_activity(self):
+        for question in await self.bot.question.get_all():
+            if question["last_activity"] + self.inactiveThreadDurationInS - self.inactiveThreadReminderBeforeExpirationInS > round(time.time()):
+                continue
+
+            guild_question_channel_record = await self.bot.guild_question_channel.find_by_id(question["guild_id"])
+            if guild_question_channel_record is None:
+                print("Question exception: Removing " + format(question["_id"]) + " - cannot find its channel")
+                await self.bot.question.delete(question["_id"])
+                continue
+
+            channel = self.bot.get_channel(guild_question_channel_record["active_channel_id"])
+            try:
+                message = await channel.fetch_message(question["_id"])
+                if message.flags.has_thread:
+                    thread = message.channel.get_thread(message.id)
+                    if question["remind_msg_id"] is not None:
+                        try:
+                            remind_message = await thread.fetch_message(question["remind_msg_id"])
+                            await remind_message.delete()
+                        except discord.errors.NotFound:
+                            print("Question error: Not found last remind message of question: " + format(question["_id"]))
+
+                    question["last_activity"] = round(time.time())
+                    question["remind_msg_id"] = (
+                        await thread.send(embed=discord.Embed(
+                            color=self.bot.colors["ORANGE"],
+                            title="Inactive question, please answer or close it if already answered"
+                        ))
+                    ).id
+
+                    await self.bot.question.upsert(question)
+                else:
+                    print("Question error: missing thread!")
+            except discord.errors.NotFound:
+                print("Question exception: Removing " + format(question["_id"]) + " - no longer exist!")
+                await self.bot.question.delete(question["_id"])
 
     async def __createCategory(self, guild: discord.guild):
         return await guild.create_category(self.channelsCategoryName, position=0)
@@ -135,15 +172,10 @@ class Question(commands.Cog):
 
         return question_manager_role
 
-    async def threadActivityChecker(self):
+    async def __start_thread_activity_checker(self):
         while True:
-            questions = await self.bot.question.get_all()
-            for question in questions:
-                if question["last_activity"] + self.inactiveThreadDurationInS - self.inactiveThreadReminderBeforeExpirationInS <= round(time.time()):
-                    print("to remember" + format(question["_id"]))
-                    # TODO Send via bot remember message into that thread
-
-            await asyncio.sleep(self.inactiveThreadCheckEveryS)
+            await self.__check_threads_activity()
+            await asyncio.sleep(self.inactiveThreadCheckEveryInS)
 
 
 def setup(bot):

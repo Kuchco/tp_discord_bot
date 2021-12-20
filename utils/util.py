@@ -1,4 +1,5 @@
 import asyncio
+import string
 
 import discord
 from discord.ext.buttons import Paginator
@@ -49,3 +50,7 @@ def clean_code(content):
         return "\n".join(content.split("\n")[1:])[:-3]
     else:
         return content
+
+
+def log_error(message: string):
+    print("\033[91m" + message + "\033[0m")

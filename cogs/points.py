@@ -2,15 +2,10 @@ import discord
 
 from discord.ext import commands
 
+from core.base_command import BaseCommand
 
-class Points(commands.Cog, name="Points"):
-    def __init__(self, bot):
-        self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print("Points Cog has been loaded\n-----")
-
+class Points(BaseCommand, name="Points"):
     @commands.group(aliases=['points'], invoke_without_command=True)
     @commands.guild_only()
     async def pts(self, ctx):

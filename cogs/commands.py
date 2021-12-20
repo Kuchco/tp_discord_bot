@@ -3,16 +3,10 @@ import platform
 import discord
 from discord.ext import commands
 
+from core.base_command import BaseCommand
 
-class Commands(commands.Cog):
 
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print("Commands Cog has been loaded\n-----")
-
+class Commands(BaseCommand):
     @commands.command()
     @commands.has_guild_permissions(administrator=True)
     async def stats(self, ctx):

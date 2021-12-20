@@ -2,25 +2,22 @@ import json
 from datetime import datetime
 
 import discord
-from discord.ext import commands
 from discord.ext.tasks import loop
 from googleapiclient.discovery import build
+
+from core.base_command import BaseCommand
 
 with open("cogs/yt.json") as config_file:
     config = json.load(config_file)
 
 
-class Youtube(commands.Cog):
+class Youtube(BaseCommand):
     def __init__(self, bot):
-        self.bot = bot
+        super().__init__(bot)
         self.youtube = build('youtube', 'v3', developerKey=config['api_key'])
         self.videos = {}
         self.db_videos = {}
         self.check_youtube_notifications.start()
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print("Youtube Cog has been loaded\n-----")
 
     async def get_videos(self):
         request = self.youtube.search().list(

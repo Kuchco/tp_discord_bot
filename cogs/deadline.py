@@ -4,11 +4,10 @@ from datetime import datetime
 
 from discord.ext import commands
 
+from core.base_command import BaseCommand
 
-class Deadline(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
 
+class Deadline(BaseCommand):
     @commands.command(description="Príkaz na nastavenie upozornení deadline termínu")
     async def deadline(self, ctx, name, *args):
         try:

@@ -30,10 +30,14 @@ async def on_ready():
     print(f"-----\nLogged in as: {bot.user.name} : {bot.user.id}\n-----\nMôj prefix je: {bot.default_prefix}\n-----")
     await bot.change_presence(activity=discord.Game(name=f"Ahoj, ja som {bot.user.name}.\na pomôžem vám na serveri!"))
 
+    print("Setting DB")
     for document in await bot.config.get_all():
         print(document)
 
-    print("Initialized Database\n-----")
+    print("DB ready, starting after_ready callback on commands")
+    for command in bot.cogs.items():
+        if callable(getattr(command[1], 'after_ready', None)):
+            await command[1].after_ready()
 
 
 @bot.event

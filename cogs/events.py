@@ -6,15 +6,10 @@ import time
 import discord
 from discord.ext import commands
 
+from core.base_command import BaseCommand
 
-class Events(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print("Events Cog has been loaded\n-----")
-
+class Events(BaseCommand):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         # On member joins we find a channel called general and if it exists,

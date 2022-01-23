@@ -7,20 +7,18 @@ import discord
 import motor.motor_asyncio
 from discord.ext import commands
 
-from main_utils import text_channel_create_thread, create_bot
+from main_utils import create_bot
 from utils.mongo import Document
 
 cwd = Path(__file__).parents[0]
 cwd = str(cwd)
 print(f"{cwd}\n-----")
 
-# New functionality for discord.py
-discord.TextChannel.create_thread = text_channel_create_thread
-
 secret = json.load(open(cwd+'/bot_config/secret.json'))
 GUILD = secret['DISCORD_GUILD']
 logging.basicConfig(level=logging.INFO)
 intents = discord.Intents.default()
+# noinspection PyDunderSlots,PyUnresolvedReferences
 intents.members = True
 client = discord.Client(intents=intents)
 bot = create_bot(cwd, intents, secret)
@@ -31,11 +29,6 @@ async def on_ready():
     # On ready, print some details to standard out
     print(f"-----\nLogged in as: {bot.user.name} : {bot.user.id}\n-----\nMôj prefix je: {bot.default_prefix}\n-----")
     await bot.change_presence(activity=discord.Game(name=f"Ahoj, ja som {bot.user.name}.\na pomôžem vám na serveri!"))
-
-    for document in await bot.config.get_all():
-        print(document)
-
-    print("Initialized Database\n-----")
 
 
 @bot.event

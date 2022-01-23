@@ -1,15 +1,18 @@
+import asyncio
 import string
 import time
 
 import discord.ext.commands.context
 from discord.ext import commands
 
-# TODO how to keep threads a live??? checking and pass message by bot near expiration???
 # TODO add way how close reaction thread and store correct result/results
+import utils.util
+from core.base_command import BaseCommand
 
 
-class Question(commands.Cog):
+class Question(BaseCommand):
     def __init__(self, bot):
+        super().__init__(bot)
         self.activeChannelName = "active-questions"
         self.activeChannelTopic = "This channel contains not resolved questions"
 
@@ -18,12 +21,35 @@ class Question(commands.Cog):
 
         self.channelsCategoryName = "Question-bot channels"
         self.channelsRoleName = "questions-manager"
-        self.bot = bot
+
+        self.inactiveThreadDurationInS = 24 * 60 * 60
+        self.inactiveThreadCheckEveryInS = 60 * 60
+        self.inactiveThreadReminderBeforeExpirationInS = self.inactiveThreadCheckEveryInS * 3
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await super().on_ready()
+        await self.__start_thread_activity_checker()
 
     @commands.group(aliases=["q"], invoke_without_command=True, description="Príkaz na položenie otázky")
     @commands.guild_only()
     async def question(self, ctx):
         await ctx.invoke(self.bot.get_command("help"), entity="question")
+
+    @question.command(name="cancel", description="cancel question, use inside question thread")
+    @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
+    async def question_cancel(self, context: discord.ext.commands.context.Context):
+        question = await self.bot.question.find_by_id(context.channel.id)
+        if question is not None:
+            await context.channel.parent.get_partial_message(question["_id"]).delete()
+            await context.channel.delete()
+            await self.bot.question.delete(context.channel.id)
+        else:
+            await context.channel.send(embed=discord.Embed(
+                color=self.bot.colors["RED"],
+                title="Usable only in question thread"
+            ))
 
     @question.command(aliases=["c"], name="create", description="creates new question, wrap question into \" for question with spaces")
     @commands.guild_only()
@@ -39,9 +65,54 @@ class Question(commands.Cog):
 
         question_message = await channel.send(embed=question_embed)
 
-        await channel.create_thread("Question: " + (question[0:15].strip() + "...") if len(question) > 15 else question, 24*60, question_message)
-        await self.bot.question.upsert({"_id": question_message.id, "last_activity": round(time.time())})
+        await channel.create_thread(
+            name="Question #" + ((question[0:15].strip() + "...") if len(question) > 15 else question),
+            message=question_message, auto_archive_duration=self.inactiveThreadDurationInS / 60,
+        )
+
+        await self.bot.question.upsert({
+            "_id": question_message.id, "guild_id": context.guild.id, "last_activity": round(time.time()), "remind_msg_id": None
+        })
+
         await context.message.delete()
+
+    async def __check_threads_activity(self):
+        for question in await self.bot.question.get_all():
+            if question["last_activity"] + self.inactiveThreadDurationInS - self.inactiveThreadReminderBeforeExpirationInS > round(time.time()):
+                continue
+
+            guild_question_channel_record = await self.bot.guild_question_channel.find_by_id(question["guild_id"])
+            if guild_question_channel_record is None:
+                utils.util.log_error("Question exception: Removing " + format(question["_id"]) + " - cannot find its channel")
+                await self.bot.question.delete(question["_id"])
+                continue
+
+            channel = self.bot.get_channel(guild_question_channel_record["active_channel_id"])
+            try:
+                message = await channel.fetch_message(question["_id"])
+                if message.flags.has_thread:
+                    thread = message.channel.get_thread(message.id)
+                    if question["remind_msg_id"] is not None:
+                        try:
+                            remind_message = await thread.fetch_message(question["remind_msg_id"])
+                            await remind_message.delete()
+                        except discord.errors.NotFound:
+                            utils.util.log_error("Question error: Not found last remind message of question: " + format(question["_id"]))
+
+                    question["last_activity"] = round(time.time())
+                    question["remind_msg_id"] = (
+                        await thread.send(embed=discord.Embed(
+                            color=self.bot.colors["ORANGE"],
+                            title="Inactive question, please answer or close it if already answered"
+                        ))
+                    ).id
+
+                    await self.bot.question.upsert(question)
+                else:
+                    utils.util.log_error("Question error: missing thread!")
+            except discord.errors.NotFound:
+                utils.util.log_error("Question exception: Removing " + format(question["_id"]) + " - no longer exist!")
+                await self.bot.question.delete(question["_id"])
 
     async def __createCategory(self, guild: discord.guild):
         return await guild.create_category(self.channelsCategoryName, position=0)
@@ -116,6 +187,11 @@ class Question(commands.Cog):
         await (await guild.fetch_member(self.bot.user.id)).add_roles(question_manager_role)
 
         return question_manager_role
+
+    async def __start_thread_activity_checker(self):
+        while True:
+            await self.__check_threads_activity()
+            await asyncio.sleep(self.inactiveThreadCheckEveryInS)
 
 
 def setup(bot):

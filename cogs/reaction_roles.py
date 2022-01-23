@@ -4,6 +4,8 @@ import discord
 import emojis
 from discord.ext import commands
 
+from core.base_command import BaseCommand
+
 
 class ReactionRolesNotSetup(commands.CommandError):
     """Voľba rolí pomocou reakcii nie je nastavená na tomto serveri."""
@@ -23,10 +25,7 @@ def is_setup():
     return commands.check(wrap_func)
 
 
-class Reactions(commands.Cog, name="ReactionRoles"):
-    def __init__(self, bot):
-        self.bot = bot
-
+class Reactions(BaseCommand, name="ReactionRoles"):
     async def rebuild_role_embed(self, guild_id):
         data = await self.bot.config.find(guild_id)
         channel_id = data["channel_id"]

@@ -1,11 +1,12 @@
 from discord.ext import commands
 
+from core.base_command import BaseCommand
 from utils.util import Pag
 
 
-class Help(commands.Cog, name="Help command"):
+class Help(BaseCommand, name="Help command"):
     def __init__(self, bot):
-        self.bot = bot
+        super().__init__(bot)
         self.cmds_per_page = 6
 
     def get_command_signature(self, command: commands.Command, ctx: commands.Context):
@@ -72,10 +73,6 @@ class Help(commands.Cog, name="Help command"):
             pages.append(commands_entry)
 
         await Pag(title=title, color=0xCE2029, entries=pages, length=1).start(ctx)
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print(f"{self.__class__.__name__} cog has been loaded\n-----")
 
     @commands.command(name="help", aliases=["h", "commands"], description="Help príkaz!")
     @commands.has_guild_permissions(administrator=True)

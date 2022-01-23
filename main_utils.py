@@ -1,5 +1,4 @@
 import discord
-import requests
 
 from discord.ext import commands
 
@@ -60,18 +59,3 @@ async def get_bot_prefix(discord_bot, message):
     except:
         return commands.when_mentioned_or(discord_bot.default_prefix)(discord_bot, message)
 
-
-async def text_channel_create_thread(self, name, minutes, message):
-    token = 'Bot ' + self._state.http.token
-    url = f"https://discord.com/api/v9/channels/{self.id}/messages/{message.id}/threads"
-    headers = {
-        "authorization": token,
-        "content-type": "application/json"
-    }
-    data = {
-        "name": name,
-        "type": 11,
-        "auto_archive_duration": minutes
-    }
-
-    return requests.post(url, headers=headers, json=data).json()

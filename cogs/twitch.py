@@ -3,24 +3,20 @@ from datetime import datetime
 
 import discord
 import requests
-from discord.ext import commands
 from discord.ext.tasks import loop
+
+from core.base_command import BaseCommand
 
 with open("cogs/config.json") as config_file:
     config = json.load(config_file)
 
 
-class Twitch(commands.Cog):
-
+class Twitch(BaseCommand):
     def __init__(self, bot):
-        self.bot = bot
+        super().__init__(bot)
         self.check_twitch_notifications.start()
         self.online_users = {}
         self.online_users["interes_group"] = None
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print("Twitch Cog has been loaded\n-----")
 
     def get_access_token(self):
         params = {

@@ -3,6 +3,7 @@ import string
 import time
 
 import discord.ext.commands.context
+from discord import TextChannel
 from discord.ext import commands
 
 import utils.util
@@ -42,10 +43,16 @@ class Question(BaseCommand):
         question = await self.bot.question.find_by_id(context.channel.id)
         if question is not None:
             # TODO parse original message
-            # TODO construct message in form, question & answer, send into archived thread
-            # TODO remove question with next line:
-            # await self.__removeQuestion(context, question["_id"])
-            print(answer)
+
+            channel = await self.__getArchivedQuestionsChannel(context.guild)
+            question_embed = discord.Embed(
+                color=self.bot.colors["GREEN"],
+                description=f"{context.author.mention} solved question with answer: ***" + answer.capitalize() + "***\n\n",
+                title="QUESTION HERE"
+            )
+
+            await channel.send(embed=question_embed)
+            await self.__removeQuestion(context, question["_id"])
         else:
             await self.__sendUsableOnlyInsideQuestionThreadMessage(context)
 
@@ -65,7 +72,7 @@ class Question(BaseCommand):
 
         await channel.create_thread(
             name="Question #" + ((question[0:15].strip() + "...") if len(question) > 15 else question),
-            message=question_message, auto_archive_duration=self.inactiveThreadDurationInS / 60,
+            message=question_message, auto_archive_duration=round(self.inactiveThreadDurationInS / 60),
         )
 
         await self.bot.question.upsert({
@@ -141,6 +148,12 @@ class Question(BaseCommand):
 
         return channel
 
+    async def __getActiveQuestionsChannel(self, guild: discord.guild) -> TextChannel:
+        return await self.__getQuestionChannel(guild, "active_channel_id")
+
+    async def __getArchivedQuestionsChannel(self, guild: discord.guild) -> TextChannel:
+        return await self.__getQuestionChannel(guild, "archived_channel_id")
+
     async def __getChannelCategory(self, guild: discord.guild):
         for category in guild.categories:
             if category.name == self.channelsCategoryName:
@@ -148,17 +161,18 @@ class Question(BaseCommand):
 
         return await self.__createCategory(guild)
 
-    async def __getActiveQuestionsChannel(self, guild: discord.guild):
+    async def __getQuestionChannel(self, guild: discord.guild, channel_id: string):
         channel_record = await self.bot.guild_question_channel.find_by_id(guild.id)
-        active_channel = None
+        channel = None
 
         if channel_record is not None:
-            active_channel = guild.get_channel(channel_record["active_channel_id"])
+            channel = guild.get_channel(channel_record[channel_id])
 
-        if active_channel is None:
-            [_, active_channel, _] = await self.__setup(guild)
+        if channel is None:
+            [_, channels] = await self.__setup(guild)
+            channel = channels[channel_id]
 
-        return active_channel
+        return channel
 
     async def __removeQuestion(self, context: discord.ext.commands.context.Context, question_id: int):
         await context.channel.parent.get_partial_message(question_id).delete()
@@ -186,7 +200,7 @@ class Question(BaseCommand):
             "active_channel_id": active_channel.id, "archived_channel_id": archived_channel.id, "_id": guild.id
         })
 
-        return [category, active_channel, archived_channel]
+        return [category, {"active_channel_id": active_channel, "archived_channel_id": archived_channel}]
 
     async def __setupRole(self, guild: discord.guild):
         question_manager_role = None

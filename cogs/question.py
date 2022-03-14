@@ -22,6 +22,9 @@ class Question(BaseCommand):
         self.channelsCategoryName = "Question-bot channels"
         self.channelsRoleName = "questions-manager"
 
+        self.question_prefix = "is asking:\n\n***"
+        self.question_postfix = "***\n\n__You can response into thread of this message__"
+
         self.inactiveThreadDurationInS = 24 * 60 * 60
         self.inactiveThreadCheckEveryInS = 60 * 60
         self.inactiveThreadReminderBeforeExpirationInS = self.inactiveThreadCheckEveryInS * 3
@@ -42,16 +45,16 @@ class Question(BaseCommand):
     async def question_answer(self, context: discord.ext.commands.context.Context, answer):
         question = await self.bot.question.find_by_id(context.channel.id)
         if question is not None:
-            # TODO parse original message
-
-            channel = await self.__getArchivedQuestionsChannel(context.guild)
+            raw_question_message = (await (await self.__getActiveQuestionsChannel(context.guild)).fetch_message(question["_id"])).embeds[0].description
+            message_start = raw_question_message.find(self.question_prefix) + len(self.question_prefix)
+            message_end = raw_question_message.find(self.question_postfix)
             question_embed = discord.Embed(
                 color=self.bot.colors["GREEN"],
                 description=f"{context.author.mention} solved question with answer: ***" + answer.capitalize() + "***\n\n",
-                title="QUESTION HERE"
+                title=raw_question_message[message_start:message_end]
             )
 
-            await channel.send(embed=question_embed)
+            await (await self.__getArchivedQuestionsChannel(context.guild)).send(embed=question_embed)
             await self.__removeQuestion(context, question["_id"])
         else:
             await self.__sendUsableOnlyInsideQuestionThreadMessage(context)
@@ -62,9 +65,9 @@ class Question(BaseCommand):
         channel = await self.__getActiveQuestionsChannel(context.guild)
         question_embed = discord.Embed(
             color=self.bot.colors["BLUE"],
-            description=f"{context.author.mention} is asking:\n\n" +
-                        "***" + (question if question[-1] == "?" else question + "?").capitalize() + "***\n\n"
-                        "__You can response into thread of this message__",
+            description=f"{context.author.mention} " + self.question_prefix +
+                        (question if question[-1] == "?" else question + "?").capitalize() +
+                        self.question_postfix,
             title="Hi everyone, we need your help with the following question"
         )
 

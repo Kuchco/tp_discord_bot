@@ -5,7 +5,6 @@ import time
 import discord.ext.commands.context
 from discord.ext import commands
 
-# TODO add way how close reaction thread and store correct result/results
 import utils.util
 from core.base_command import BaseCommand
 
@@ -31,27 +30,26 @@ class Question(BaseCommand):
         await super().on_ready()
         await self.__start_thread_activity_checker()
 
-    @commands.group(aliases=["q"], invoke_without_command=True, description="Príkaz na položenie otázky")
+    @commands.group(aliases=["q"], invoke_without_command=True, description="Group of commands determined for the Q&A system")
     @commands.guild_only()
     async def question(self, ctx):
         await ctx.invoke(self.bot.get_command("help"), entity="question")
 
-    @question.command(name="cancel", description="cancel question, use inside question thread")
+    @question.command(aliases=["a"], name="answer", description="Answers (resolves) question, usable only inside active question thread. Wrap answer into \" for question with spaces")
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
-    async def question_cancel(self, context: discord.ext.commands.context.Context):
+    async def question_answer(self, context: discord.ext.commands.context.Context, answer):
         question = await self.bot.question.find_by_id(context.channel.id)
         if question is not None:
-            await context.channel.parent.get_partial_message(question["_id"]).delete()
-            await context.channel.delete()
-            await self.bot.question.delete(context.channel.id)
+            # TODO parse original message
+            # TODO construct message in form, question & answer, send into archived thread
+            # TODO remove question with next line:
+            # await self.__removeQuestion(context, question["_id"])
+            print(answer)
         else:
-            await context.channel.send(embed=discord.Embed(
-                color=self.bot.colors["RED"],
-                title="Usable only in question thread"
-            ))
+            await self.__sendUsableOnlyInsideQuestionThreadMessage(context)
 
-    @question.command(aliases=["c"], name="create", description="creates new question, wrap question into \" for question with spaces")
+    @question.command(aliases=["c"], name="create", description="Creates new question, wrap question into \" for question with spaces")
     @commands.guild_only()
     async def question_create(self, context: discord.ext.commands.context.Context, question):
         channel = await self.__getActiveQuestionsChannel(context.guild)
@@ -75,6 +73,16 @@ class Question(BaseCommand):
         })
 
         await context.message.delete()
+
+    @question.command(aliases=["r", "delete", "d"], name="remove", description="Removes question, usable only inside active question thread.")
+    @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
+    async def question_remove(self, context: discord.ext.commands.context.Context):
+        question = await self.bot.question.find_by_id(context.channel.id)
+        if question is not None:
+            await self.__removeQuestion(context, question["_id"])
+        else:
+            await self.__sendUsableOnlyInsideQuestionThreadMessage(context)
 
     async def __check_threads_activity(self):
         for question in await self.bot.question.get_all():
@@ -151,6 +159,17 @@ class Question(BaseCommand):
             [_, active_channel, _] = await self.__setup(guild)
 
         return active_channel
+
+    async def __removeQuestion(self, context: discord.ext.commands.context.Context, question_id: int):
+        await context.channel.parent.get_partial_message(question_id).delete()
+        await context.channel.delete()
+        await self.bot.question.delete(context.channel.id)
+
+    async def __sendUsableOnlyInsideQuestionThreadMessage(self, context: discord.ext.commands.context.Context):
+        await context.channel.send(embed=discord.Embed(
+            color=self.bot.colors["RED"],
+            title="Usable only inside question thread"
+        ))
 
     async def __setup(self, guild: discord.guild):
         category = await self.__getChannelCategory(guild)

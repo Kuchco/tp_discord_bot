@@ -55,11 +55,13 @@ class Reactions(BaseCommand, name="ReactionRoles"):
         data = map(lambda r: r["_id"], data)
         return list(data)
 
-    @commands.group(aliases=['rr'], invoke_without_command=True, description="prikazy na reaction roles")
+    @commands.group(
+        aliases=['rr'], invoke_without_command=True, description="prikazy na reaction roles"
+    )
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def reaction_roles(self, ctx):
-        await ctx.invoke(self.bot.get_command("help"), entity="Reaction_roles")
+        await ctx.invoke(self.bot.get_command("help"), entity="reaction_roles")
 
     @reaction_roles.command(name="channel", description="nastavte kanál pre reaction roles")
     @commands.guild_only()

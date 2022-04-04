@@ -60,8 +60,15 @@ class Deadline(commands.Cog):
     @commands.has_guild_permissions(administrator=True)
     async def deadline_edit(self, ctx, deadline_name, *args):
         if self.loops.get(deadline_name):
-            self.loops.get(deadline_name)[0].cancel()
-            await self.deadline_create(ctx, deadline_name, args[0], args[1])
+            if len(args) == 1:
+                await self.deadline_create(ctx, deadline_name, args[0])
+                self.loops.get(deadline_name)[0].cancel()
+            elif len(args) == 2:
+                await self.deadline_create(ctx, deadline_name, args[0], args[1])
+                self.loops.get(deadline_name)[0].cancel()
+            else:
+                await ctx.send('Príliš veľa argumentov.')
+                return
             await ctx.send('Deadline pre {} bol zmenený'.format(deadline_name))
 
     @deadline.command(name="create", description="Vytvorenie deadlinu\n"
@@ -83,9 +90,15 @@ class Deadline(commands.Cog):
         except ValueError:
             await ctx.send('Bol zadaný zlý formát dátumu. Formát musí byť "dd/mm/rr HH/MM/SS" alebo "dd/mm/rr".')
             return
+        except IndexError:
+            await ctx.send('Príliš málo argumentov.')
+            return
 
-        if len(args) > 1:
+        if len(args) == 2:
             notif_days = list(map(int, args[1].split(',')))
+        elif len(args) > 2:
+            await ctx.send('Príliš veľa argumentov.')
+            return
         else:
             notif_days = [1]
 

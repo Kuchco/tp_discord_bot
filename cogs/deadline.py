@@ -26,7 +26,7 @@ class Deadline(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @deadline.command(name="end", description="Zrušene deadlinu")
+    @deadline.command(name="end", description="Zrušenie deadlinu")
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def deadline_end(self, ctx, deadline_name):
@@ -45,6 +45,15 @@ class Deadline(commands.Cog):
         #
         #     if self.loops[i].done():
         #         print("task done")
+
+    @deadline.command(name="endall", description="Zrušenie všetkých deadlinov")
+    @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
+    async def deadline_end_all(self, ctx):
+        for dl in self.loops:
+            self.loops[dl][0].cancel()
+        self.loops.clear()
+        await ctx.send('Všetky deadliny boli zrušené.')
 
     @deadline.command(name="edit", description="Zmena deadlinu")
     @commands.guild_only()

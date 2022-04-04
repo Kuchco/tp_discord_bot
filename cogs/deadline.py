@@ -62,6 +62,9 @@ class Deadline(commands.Cog):
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def deadline_create(self, ctx, name, *args):
+        if self.loops.get(name):
+            await ctx.send('Zadaný názov deadlinu uz existuje. Skúste znova s iným názvom.')
+            return
         try:
             if len(args[0]) > 8:
                 date_time = datetime.strptime(args[0], '%d/%m/%y %H:%M:%S')

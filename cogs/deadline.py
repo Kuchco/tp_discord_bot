@@ -24,7 +24,11 @@ class Deadline(commands.Cog):
         if not deadlines:
             embed.description = 'There are no deadlines.'
         for deadline in deadlines:
-            embed.add_field(name=deadline, value=self.loops.get(deadline)[1], inline=False)
+            embed.add_field(name=deadline,
+                            value="{}\nDni notifikácie: {}".format(self.loops.get(deadline)[1],
+                                                                   ', '.join(map(str, self.loops.get(deadline)[2]))
+                                                                   ),
+                            inline=False)
 
         await ctx.send(embed=embed)
 
@@ -106,7 +110,7 @@ class Deadline(commands.Cog):
 
         await ctx.send('Deadline for {} is: {}'.format(name, date_time))
         self.loops[name] = [self.bot.loop.create_task(self.alert_deadline(date_time, notif_days, name), name=name),
-                            date_time.strftime("%d-%m-%Y %H:%M:%S")]
+                            date_time.strftime("%d-%m-%Y %H:%M:%S"), notif_days]
 
     async def alert_deadline(self, input_datetime, notif_days, name):
         await self.bot.wait_until_ready()

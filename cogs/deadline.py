@@ -74,8 +74,8 @@ class Deadline(commands.Cog):
             await ctx.send('Deadline pre {} bol zmenený'.format(deadline_name))
 
     @deadline.command(name="create", description="Vytvorenie deadlinu\n"
-                                                 "V tvare '-dl create [názov deadlinu] [dd/mm/rr HH/MM/SS] "
-                                                 "alebo [dd/mm/rr] [dni upozornenia]'\n"
+                                                 "V tvare '-dl create [názov deadlinu] [dd/mm/rr HH/MM/SS]/[dd/mm/rr] "
+                                                 "[dni upozornenia](nepovinné)'\n"
                                                  'Napr.: -dl create "Zadanie 1" "1/11/21 23:59:59" "1,2,5"')
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)

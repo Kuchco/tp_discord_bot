@@ -21,6 +21,8 @@ class Deadline(commands.Cog):
     async def deadline_showall(self, ctx):
         deadlines = list(self.loops.keys())
         embed = Embed(title="Deadlines", color=0x47E9FF)
+        if not deadlines:
+            embed.description = 'There are no deadlines.'
         for deadline in deadlines:
             embed.add_field(name=deadline, value=self.loops.get(deadline)[1], inline=False)
 

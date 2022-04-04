@@ -1,8 +1,8 @@
 import asyncio
 import datetime
 from datetime import datetime
-
 from discord.ext import commands
+from discord import Embed
 
 
 class Deadline(commands.Cog):
@@ -20,7 +20,7 @@ class Deadline(commands.Cog):
     @deadline.command(name="showall", description="Výpis všetkých aktívnych deadlinov")
     async def deadline_showall(self, ctx):
         deadlines = list(self.loops.keys())
-        embed = discord.Embed(title="Deadlines", color=0x47E9FF)
+        embed = Embed(title="Deadlines", color=0x47E9FF)
         for deadline in deadlines:
             embed.add_field(name=deadline, value=self.loops.get(deadline)[1], inline=False)
 
@@ -45,6 +45,15 @@ class Deadline(commands.Cog):
         #
         #     if self.loops[i].done():
         #         print("task done")
+
+    @deadline.command(name="edit", description="Zmena deadlinu")
+    @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
+    async def deadline_edit(self, ctx, deadline_name, *args):
+        if self.loops.get(deadline_name):
+            self.loops.get(deadline_name)[0].cancel()
+            await self.deadline_create(ctx, deadline_name, args[0], args[1])
+            await ctx.send('Deadline pre {} bol zmenený'.format(deadline_name))
 
     @deadline.command(name="create", description="Vytvorenie deadlinu\n"
                                                  "V tvare '-dl create [názov deadlinu] [dd/mm/rr HH/MM/SS] "

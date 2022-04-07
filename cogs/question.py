@@ -19,6 +19,9 @@ class Question(BaseCommand):
         self.archivedChannelName = "archived-questions"
         self.archivedChannelTopic = "This channel is archive of resolved questions"
 
+        self.errorAnswerWithReactionNotFound = "In thread doesn't exist message marked by you as answer with input emoji"
+        self.errorUsableOnlyInThread = "Command is usable only inside question thread"
+
         self.channelsCategoryName = "Question-bot channels"
         self.channelsRoleName = "questions-manager"
 
@@ -45,16 +48,36 @@ class Question(BaseCommand):
     async def question_answer(self, context: discord.ext.commands.context.Context, answer):
         question = await self.bot.question.find_by_id(context.channel.id)
         if question is not None:
-            question_embed = discord.Embed(
-                color=self.bot.colors["GREEN"],
-                description=f"{context.author.mention} solved question with answer: ***" + answer.capitalize() + "***\n\n",
-                title=self.__getThreadQuestion(context.guild, question["_id"]),
+            await (await self.__getArchivedQuestionsChannel(context.guild)).send(
+                embed=await self.__getQuestionAnswerEmbed(context, question["_id"], [answer])
             )
-
-            await (await self.__getArchivedQuestionsChannel(context.guild)).send(embed=question_embed)
             await self.__removeQuestion(context, question["_id"])
         else:
-            await self.__sendUsableOnlyInsideQuestionThreadMessage(context)
+            await self.__sendErrorMessage(context, self.errorUsableOnlyInThread)
+
+    @question.command(aliases=["aem"], name="answer-emoji-marked", description="Answers (resolves) question with specific emoji marked messages. Usable only inside active question thread.")
+    @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
+    async def question_answer_emoji_marked(self, context: discord.ext.commands.context.Context, emoji):
+        question = await self.bot.question.find_by_id(context.channel.id)
+        if question is not None:
+            answers = []
+            async for message in context.history(oldest_first=True):
+                if self.bot.user.id == message.author.id:
+                    continue
+
+                if await self.__is_message_marked_by_user_with_emoji(message, context.author.id, emoji):
+                    answers.append(message.content)
+
+            if len(answers) > 0:
+                await (await self.__getArchivedQuestionsChannel(context.guild)).send(
+                    embed=await self.__getQuestionAnswerEmbed(context, question["_id"], answers)
+                )
+                await self.__removeQuestion(context, question["_id"])
+            else:
+                await self.__sendErrorMessage(context, self.errorAnswerWithReactionNotFound)
+        else:
+            await self.__sendErrorMessage(context, self.errorUsableOnlyInThread)
 
     @question.command(aliases=["c"], name="create", description="Creates new question, wrap question into \" for question with spaces")
     @commands.guild_only()
@@ -89,7 +112,7 @@ class Question(BaseCommand):
         if question is not None:
             await self.__removeQuestion(context, question["_id"])
         else:
-            await self.__sendUsableOnlyInsideQuestionThreadMessage(context)
+            await self.__sendErrorMessage(context, self.errorUsableOnlyInThread)
 
     async def __check_threads_activity(self):
         for question in await self.bot.question.get_all():
@@ -164,6 +187,23 @@ class Question(BaseCommand):
 
         return await self.__createCategory(guild)
 
+    async def __getQuestionAnswerEmbed(self, context: discord.ext.commands.context.Context, question_id: int, answers: []) -> discord.Embed:
+        merged_answer = ""
+        for answer in answers:
+            if len(answers) > 1:
+                merged_answer += "\n - "
+            merged_answer += answer.capitalize()
+
+        raw_question_message = (await (await self.__getActiveQuestionsChannel(context.guild)).fetch_message(question_id)).embeds[0].description
+        message_start = raw_question_message.find(self.question_prefix) + len(self.question_prefix)
+        message_end = raw_question_message.find(self.question_postfix)
+
+        return discord.Embed(
+            color=self.bot.colors["GREEN"],
+            description=f"{context.author.mention} solved question with answer: ***" + merged_answer + "***\n\n",
+            title=raw_question_message[message_start:message_end],
+        )
+
     async def __getQuestionChannel(self, guild: discord.guild, channel_id: string):
         channel_record = await self.bot.guild_question_channel.find_by_id(guild.id)
         channel = None
@@ -176,13 +216,6 @@ class Question(BaseCommand):
             channel = channels[channel_id]
 
         return channel
-
-    async def __getThreadQuestion(self, guild: discord.guild, thread_id: int):
-        raw_question_message = (await (await self.__getActiveQuestionsChannel(guild)).fetch_message(thread_id)).embeds[0].description
-        message_start = raw_question_message.find(self.question_prefix) + len(self.question_prefix)
-        message_end = raw_question_message.find(self.question_postfix)
-
-        return raw_question_message[message_start:message_end]
 
     async def __is_message_marked_by_user_with_emoji(self, message: discord.Message, user_id: int, emoji) -> bool:
         answer_reaction = discord.utils.get(message.reactions, emoji=emoji)
@@ -199,7 +232,7 @@ class Question(BaseCommand):
         await context.channel.delete()
         await self.bot.question.delete(context.channel.id)
 
-    async def __sendUsableOnlyInsideQuestionThreadMessage(self, context: discord.ext.commands.context.Context):
+    async def __sendErrorMessage(self, context: discord.ext.commands.context.Context, text: string):
         await context.channel.send(embed=discord.Embed(
             color=self.bot.colors["RED"],
             title="Usable only inside question thread"

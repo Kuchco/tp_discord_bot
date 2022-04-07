@@ -45,13 +45,10 @@ class Question(BaseCommand):
     async def question_answer(self, context: discord.ext.commands.context.Context, answer):
         question = await self.bot.question.find_by_id(context.channel.id)
         if question is not None:
-            raw_question_message = (await (await self.__getActiveQuestionsChannel(context.guild)).fetch_message(question["_id"])).embeds[0].description
-            message_start = raw_question_message.find(self.question_prefix) + len(self.question_prefix)
-            message_end = raw_question_message.find(self.question_postfix)
             question_embed = discord.Embed(
                 color=self.bot.colors["GREEN"],
                 description=f"{context.author.mention} solved question with answer: ***" + answer.capitalize() + "***\n\n",
-                title=raw_question_message[message_start:message_end]
+                title=self.__getThreadQuestion(context.guild, question["_id"]),
             )
 
             await (await self.__getArchivedQuestionsChannel(context.guild)).send(embed=question_embed)
@@ -110,6 +107,9 @@ class Question(BaseCommand):
                 message = await channel.fetch_message(question["_id"])
                 if message.flags.has_thread:
                     thread = message.channel.get_thread(message.id)
+                    if thread is None:
+                        continue
+
                     if question["remind_msg_id"] is not None:
                         try:
                             remind_message = await thread.fetch_message(question["remind_msg_id"])
@@ -176,6 +176,13 @@ class Question(BaseCommand):
             channel = channels[channel_id]
 
         return channel
+
+    async def __getThreadQuestion(self, guild: discord.guild, thread_id: int):
+        raw_question_message = (await (await self.__getActiveQuestionsChannel(guild)).fetch_message(thread_id)).embeds[0].description
+        message_start = raw_question_message.find(self.question_prefix) + len(self.question_prefix)
+        message_end = raw_question_message.find(self.question_postfix)
+
+        return raw_question_message[message_start:message_end]
 
     async def __removeQuestion(self, context: discord.ext.commands.context.Context, question_id: int):
         await context.channel.parent.get_partial_message(question_id).delete()

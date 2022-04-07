@@ -184,6 +184,16 @@ class Question(BaseCommand):
 
         return raw_question_message[message_start:message_end]
 
+    async def __is_message_marked_by_user_with_emoji(self, message: discord.Message, user_id: int, emoji) -> bool:
+        answer_reaction = discord.utils.get(message.reactions, emoji=emoji)
+
+        if answer_reaction is not None:
+            async for user in answer_reaction.users():
+                if user.id == user_id:
+                    return True
+
+        return False
+
     async def __removeQuestion(self, context: discord.ext.commands.context.Context, question_id: int):
         await context.channel.parent.get_partial_message(question_id).delete()
         await context.channel.delete()

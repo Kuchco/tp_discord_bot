@@ -48,9 +48,14 @@ class Question(BaseCommand):
     async def question_answer(self, context: discord.ext.commands.context.Context, answer) -> None:
         question = await self.bot.question.find_by_id(context.channel.id)
         if question is not None:
-            await (await self.__getArchivedQuestionsChannel(context.guild)).send(
+            link = await (await self.__getArchivedQuestionsChannel(context.guild)).send(
                 embed=await self.__getQuestionAnswerEmbed(context, question["_id"], [answer])
             )
+
+            user = context.message.guild.get_member(int(question["user_id"])) or None
+            if user is not None:
+                await user.send(embed=self.__getQuestionAnswerEmbedForAuthor(context, link))
+
             await self.__removeQuestion(context, question["_id"])
         else:
             await self.__sendErrorMessage(context, self.errorUsableOnlyInThread)
@@ -70,9 +75,14 @@ class Question(BaseCommand):
                     answers.append(message.content)
 
             if len(answers) > 0:
-                await (await self.__getArchivedQuestionsChannel(context.guild)).send(
+                link = await (await self.__getArchivedQuestionsChannel(context.guild)).send(
                     embed=await self.__getQuestionAnswerEmbed(context, question["_id"], answers)
                 )
+
+                user = context.message.guild.get_member(int(question["user_id"])) or None
+                if user is not None:
+                    await user.send(embed=self.__getQuestionAnswerEmbedForAuthor(context, link))
+
                 await self.__removeQuestion(context, question["_id"])
             else:
                 await self.__sendErrorMessage(context, self.errorAnswerWithReactionNotFound)
@@ -99,7 +109,11 @@ class Question(BaseCommand):
         )
 
         await self.bot.question.upsert({
-            "_id": question_message.id, "guild_id": context.guild.id, "last_activity": round(time.time()), "remind_msg_id": None
+            "_id": question_message.id,
+            "guild_id": context.guild.id,
+            "last_activity": round(time.time()),
+            "remind_msg_id": None,
+            "user_id": context.author.id
         })
 
         await context.message.delete()
@@ -146,14 +160,10 @@ class Question(BaseCommand):
 
         return await self.__createCategory(guild)
 
-    async def __getQuestionAnswerEmbed(self, context: discord.ext.commands.context.Context, question_id: int, answers: []) -> discord.Embed:
-        # TODO change - for layout "-"
-        # TODO underline first line with author, every answer should be on own line, include one line ones
+    async def __getQuestionAnswerEmbed(self, context: discord.ext.commands.context.Context, question_id: int, answers: [], title_prefix: string = "") -> discord.Embed:
         merged_answer = ""
         for answer in answers:
-            if len(answers) > 1:
-                merged_answer += "\n - "
-            merged_answer += answer.capitalize()
+            merged_answer += "\n - " + answer.capitalize()
 
         raw_question_message = (await (await self.__getActiveQuestionsChannel(context.guild)).fetch_message(question_id)).embeds[0].description
         message_start = raw_question_message.find(self.question_prefix) + len(self.question_prefix)
@@ -161,8 +171,16 @@ class Question(BaseCommand):
 
         return discord.Embed(
             color=self.bot.colors["GREEN"],
-            description=f"{context.author.mention} solved question with answer: ***" + merged_answer + "***\n\n",
-            title=raw_question_message[message_start:message_end],
+            description=f"{context.author.mention} solved question with answer:***" + merged_answer + "***",
+            title=title_prefix + raw_question_message[message_start:message_end],
+        )
+
+    def __getQuestionAnswerEmbedForAuthor(self, context: discord.ext.commands.context.Context, link: string):
+        return discord.Embed(
+                color=self.bot.colors["GREEN"],
+                description=f"{context.author.mention} solved your question, answer can be found [here in " +
+                            context.message.guild.name + "](" + link.jump_url + ")",
+                title="Your question has been answered",
         )
 
     async def __getQuestionChannel(self, guild: discord.guild, channel_id: string) -> discord.TextChannel:

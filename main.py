@@ -50,6 +50,7 @@ async def on_message(message):
 
 
 if __name__ == '__main__':
+    bot.client = client
     bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(str(bot.connection_url))
     bot.db = bot.mongo["discordBot"]
     bot.config = Document(bot.db, "config")
@@ -60,7 +61,7 @@ if __name__ == '__main__':
     bot.youtube = Document(bot.db, "youtube")
 
     # When running this file, if it is the 'main' file
-    # I.E its not being imported from another python file run this
+    # I.E it's not being imported from another python file run this
     for file in os.listdir(cwd+"/cogs"):
         if file.endswith(".py") and not file.startswith("_"):
             bot.load_extension(f"cogs.{file[:-3]}")

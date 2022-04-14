@@ -5,7 +5,7 @@ import discord
 import requests
 from discord.ext.tasks import loop
 
-from core.base_command import BaseCommand
+from src.core.base_command import BaseCommand
 
 with open("cogs/config.json") as config_file:
     config = json.load(config_file)

@@ -5,7 +5,7 @@ import discord
 from discord.ext.tasks import loop
 from googleapiclient.discovery import build
 
-from core.base_command import BaseCommand
+from src.core.base_command import BaseCommand
 
 with open("cogs/yt.json") as config_file:
     config = json.load(config_file)

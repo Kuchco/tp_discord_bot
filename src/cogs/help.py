@@ -1,7 +1,7 @@
 from discord.ext import commands
 
-from core.base_command import BaseCommand
-from utils.util import Pag
+from src.core.base_command import BaseCommand
+from src.utils.util import Pag
 
 
 class Help(BaseCommand, name="Help command"):

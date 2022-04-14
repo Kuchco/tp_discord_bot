@@ -8,7 +8,7 @@ import motor.motor_asyncio
 from discord.ext import commands
 
 from main_utils import create_bot
-from utils.mongo import Document
+from src.utils.mongo import Document
 
 cwd = Path(__file__).parents[0]
 cwd = str(cwd)

@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 
 import discord
@@ -6,9 +5,9 @@ from discord.ext.tasks import loop
 from googleapiclient.discovery import build
 
 from src.core.base_command import BaseCommand
+from src.utils.json_load import read_json
 
-with open("cogs/yt.json") as config_file:
-    config = json.load(config_file)
+config = read_json("yt")
 
 
 class Youtube(BaseCommand):

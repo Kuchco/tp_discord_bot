@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from pathlib import Path
@@ -8,13 +7,14 @@ import motor.motor_asyncio
 from discord.ext import commands
 
 from main_utils import create_bot
+from src.utils.json_load import read_json
 from src.utils.mongo import Document
 
 cwd = Path(__file__).parents[0]
 cwd = str(cwd)
 print(f"{cwd}\n-----")
 
-secret = json.load(open(cwd+'/bot_config/secret.json'))
+secret = read_json("secret")
 GUILD = secret['DISCORD_GUILD']
 logging.basicConfig(level=logging.INFO)
 intents = discord.Intents.default()

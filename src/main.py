@@ -7,8 +7,8 @@ import motor.motor_asyncio
 from discord.ext import commands
 
 from main_utils import create_bot
-from src.utils.json_load import read_json
-from src.utils.mongo import Document
+from utils.json_load import read_json
+from utils.mongo import Document
 
 cwd = Path(__file__).parents[0]
 cwd = str(cwd)
@@ -27,7 +27,7 @@ bot = create_bot(cwd, intents, secret)
 @bot.event
 async def on_ready():
     # On ready, print some details to standard out
-    print(f"-----\nLogged in as: {bot.user.name} : {bot.user.id}\n-----\nMôj prefix je: {bot.default_prefix}\n-----")
+    print(f"-----\nLogged in as: {bot.user.name} [{bot.user.id}]\n")
     await bot.change_presence(activity=discord.Game(name=f"Ahoj, ja som {bot.user.name}.\na pomôžem vám na serveri!"))
 
 

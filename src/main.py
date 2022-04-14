@@ -44,10 +44,9 @@ async def on_message(message):
             prefix = bot.default_prefix
         else:
             prefix = data["prefix"]
-        await message.channel.send(f"Môj prefix na tomto serveri je  `{prefix}`", delete_after=15)
+        await message.channel.send(f"My prefix on this server is `{prefix}`", delete_after=15)
 
     await bot.process_commands(message)
-
 
 if __name__ == '__main__':
     bot.client = client

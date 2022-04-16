@@ -13,5 +13,5 @@ RUN pip install --requirement requirements.txt
 # Src files linking
 COPY /src ./src
 
-# Start of script
+# Start of the script, always keep as last command
 CMD ["python", "-u", "./src/main.py"]

@@ -6,12 +6,12 @@ WORKDIR /usr/src/app
 RUN apt -y update --fix-missing && apt -y upgrade
 RUN apt install -y git
 
-# Project files linking
-COPY requirements.txt .
-COPY /src ./src
-
 # Dependencies installation
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt .
+RUN pip install --requirement requirements.txt
+
+# Src files linking
+COPY /src ./src
 
 # Start of script
 CMD ["python", "-u", "./src/main.py"]

@@ -2,7 +2,7 @@ import discord
 
 from discord.ext import commands
 
-from core.base_command import BaseCommand
+from src.core.base_command import BaseCommand
 
 
 class Points(BaseCommand, name="Points"):

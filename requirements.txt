@@ -1,9 +1,11 @@
-APScheduler==3.8.1
+APScheduler==3.9.1
 buttons==0.1.9
-git+https://github.com/Rapptz/discord.py.git@master
-dnspython==2.1.0
+dnspython==2.2.1
 emojis==0.6.0
-google-api-python-client==2.33.0
+google-api-python-client==2.44.0
 motor==2.5.1
-requests==2.26.0
-python-dotenv==0.19.1
+python-dotenv==0.20.0
+requests==2.27.1
+
+#Officialy is out package without threads, so we are using git repo because it's master branch is regularly updated, we specified version to commit SHA
+git+https://github.com/Rapptz/discord.py.git@45d498c1b76deaf3b394d17ccf56112fa691d160

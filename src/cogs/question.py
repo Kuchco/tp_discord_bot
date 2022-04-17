@@ -6,8 +6,8 @@ import discord.ext.commands.context
 from discord import TextChannel
 from discord.ext import commands
 
-import utils.util
-from core.base_command import BaseCommand
+import src.utils.util
+from src.core.base_command import BaseCommand
 
 
 class Question(BaseCommand):
@@ -218,7 +218,7 @@ class Question(BaseCommand):
 
             guild_question_channel_record = await self.bot.guild_question_channel.find_by_id(question["guild_id"])
             if guild_question_channel_record is None:
-                utils.util.log_error("Question exception: Removing " + format(question["_id"]) + " - cannot find its channel")
+                src.utils.util.log_error("Question exception: Removing " + format(question["_id"]) + " - cannot find its channel")
                 await self.bot.question.delete(question["_id"])
                 continue
 
@@ -235,7 +235,7 @@ class Question(BaseCommand):
                             remind_message = await thread.fetch_message(question["remind_msg_id"])
                             await remind_message.delete()
                         except discord.errors.NotFound:
-                            utils.util.log_error("Question error: Not found last remind message of question: " + format(question["_id"]))
+                            src.utils.util.log_error("Question error: Not found last remind message of question: " + format(question["_id"]))
 
                     question["last_activity"] = round(time.time())
                     question["remind_msg_id"] = (
@@ -247,9 +247,9 @@ class Question(BaseCommand):
 
                     await self.bot.question.upsert(question)
                 else:
-                    utils.util.log_error("Question error: missing thread!")
+                    src.utils.util.log_error("Question error: missing thread!")
             except discord.errors.NotFound:
-                utils.util.log_error("Question exception: Removing " + format(question["_id"]) + " - no longer exist!")
+                src.utils.util.log_error("Question exception: Removing " + format(question["_id"]) + " - no longer exist!")
                 await self.bot.question.delete(question["_id"])
 
     async def __sendErrorMessage(self, context: discord.ext.commands.context.Context, text: string) -> None:

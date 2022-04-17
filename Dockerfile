@@ -13,7 +13,7 @@ RUN pip install --requirement requirements.txt
 # Src files linking
 COPY /src ./src
 
-# Setup of python environment path, else docker has issue with import of modules
+# Setup of python environment path, else docker has issue with import of modules from source code
 ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app"
 
 # Start of the script, always keep as last command

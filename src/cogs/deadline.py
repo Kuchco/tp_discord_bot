@@ -99,6 +99,9 @@ class Deadline(commands.Cog):
         except IndexError:
             await ctx.send('Príliš málo argumentov.')
             return
+        if date_time < datetime.now():
+            await ctx.send('Prosím zadávajte dátumy iba v budúcnosti.')
+            return
 
         if len(args) == 2:
             notif_days = list(map(int, args[1].split(',')))

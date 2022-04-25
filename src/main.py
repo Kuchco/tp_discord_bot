@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from pathlib import Path
@@ -8,13 +7,14 @@ import motor.motor_asyncio
 from discord.ext import commands
 
 from main_utils import create_bot
+from utils.json_load import read_json
 from utils.mongo import Document
 
 cwd = Path(__file__).parents[0]
 cwd = str(cwd)
 print(f"{cwd}\n-----")
 
-secret = json.load(open(cwd+'/bot_config/secret.json'))
+secret = read_json("secret")
 GUILD = secret['DISCORD_GUILD']
 logging.basicConfig(level=logging.INFO)
 intents = discord.Intents.default()
@@ -27,7 +27,7 @@ bot = create_bot(cwd, intents, secret)
 @bot.event
 async def on_ready():
     # On ready, print some details to standard out
-    print(f"-----\nLogged in as: {bot.user.name} : {bot.user.id}\n-----\nMôj prefix je: {bot.default_prefix}\n-----")
+    print(f"-----\nLogged in as: {bot.user.name} [{bot.user.id}]\n")
     await bot.change_presence(activity=discord.Game(name=f"Ahoj, ja som {bot.user.name}.\na pomôžem vám na serveri!"))
 
 
@@ -44,12 +44,12 @@ async def on_message(message):
             prefix = bot.default_prefix
         else:
             prefix = data["prefix"]
-        await message.channel.send(f"Môj prefix na tomto serveri je  `{prefix}`", delete_after=15)
+        await message.channel.send(f"My prefix on this server is `{prefix}`", delete_after=15)
 
     await bot.process_commands(message)
 
-
 if __name__ == '__main__':
+    bot.client = client
     bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(str(bot.connection_url))
     bot.db = bot.mongo["discordBot"]
     bot.config = Document(bot.db, "config")
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     bot.youtube = Document(bot.db, "youtube")
 
     # When running this file, if it is the 'main' file
-    # I.E its not being imported from another python file run this
+    # I.E it's not being imported from another python file run this
     for file in os.listdir(cwd+"/cogs"):
         if file.endswith(".py") and not file.startswith("_"):
             bot.load_extension(f"cogs.{file[:-3]}")

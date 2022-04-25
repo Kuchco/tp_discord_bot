@@ -1,22 +1,20 @@
-import json
 from datetime import datetime
 
 import discord
 import requests
 from discord.ext.tasks import loop
 
-from core.base_command import BaseCommand
+from src.core.base_command import BaseCommand
+from src.utils.json_load import read_json
 
-with open("cogs/config.json") as config_file:
-    config = json.load(config_file)
+config = read_json("cogs")
 
 
 class Twitch(BaseCommand):
     def __init__(self, bot):
         super().__init__(bot)
         self.check_twitch_notifications.start()
-        self.online_users = {}
-        self.online_users["interes_group"] = None
+        self.online_users = {"interes_group": None}
 
     def get_access_token(self):
         params = {

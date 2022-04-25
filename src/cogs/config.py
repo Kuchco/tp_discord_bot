@@ -1,6 +1,5 @@
 from discord.ext import commands
 
-from core.base_command import BaseCommand
 
 class Config(commands.Cog):
     def __init__(self, bot):

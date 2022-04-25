@@ -4,7 +4,7 @@ import discord
 import emojis
 from discord.ext import commands
 
-from core.base_command import BaseCommand
+from src.core.base_command import BaseCommand
 
 
 class ReactionRolesNotSetup(commands.CommandError):

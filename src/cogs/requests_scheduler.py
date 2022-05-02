@@ -32,6 +32,7 @@ class RequestsScheduler(commands.Cog):
 
     @notify.command(name="params_info", description="Print all set parameters")
     @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
     async def params_info(self, ctx):
         guilds_config_params = self.get_json_content(self.config_json_file_name)
         params_exits = False
@@ -66,6 +67,7 @@ class RequestsScheduler(commands.Cog):
 
     @notify.command(name="set_api_url", description="Set new Api URL")
     @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
     async def set_api_url(self, ctx, *args):
         #Validate set Api URL
         valid, error_text = self.validate_api_url(args)
@@ -79,6 +81,7 @@ class RequestsScheduler(commands.Cog):
 
     @notify.command(name="set_requests_time_minutes", description="Set interval how often API will be called in minutes (>= 1)")
     @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
     async def set_requests_time_minutes(self, ctx, *args):
         # Validate set request time in minutes
         valid, error_text = self.validate_request_time_minutes(args)
@@ -92,6 +95,7 @@ class RequestsScheduler(commands.Cog):
 
     @notify.command(name="set_requests_subject_shortcut", description="Set shortcut of wanted subject")
     @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
     async def set_requests_subject_shortcut(self, ctx, *args):
         # Validate set subject shortcut
         valid, error_text = self.validate_request_subject_shortcut(args)
@@ -105,6 +109,7 @@ class RequestsScheduler(commands.Cog):
 
     @notify.command(name="set_start_stop_requesting", description="Start requesting using param : true , stop requesting using param : false")
     @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
     async def set_start_stop_requesting(self, ctx, *args):
         valid, error_text, start = self.validate_request_is_running(args)
         if valid:
@@ -124,6 +129,7 @@ class RequestsScheduler(commands.Cog):
 
     @notify.command(name="add_notify_info_channels", description="Add channels where new nofications will be printed")
     @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
     async def add_notify_info_channels(self, ctx, *args):
         if len(args) < 1:
             embed = Embed(title="Add notify channels - ERROR", color=0xFF0000, description="You need add at least one channel")
@@ -148,6 +154,7 @@ class RequestsScheduler(commands.Cog):
 
     @notify.command(name="add_notify_system_error_channels", description="Add channels where new system errors will be printed")
     @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
     async def add_notify_system_error_channels(self, ctx, *args):
         if len(args) < 1:
             embed = Embed(title="Add system error channels - ERROR", color=0xFF0000, description="You need add at least one channel")
@@ -172,6 +179,7 @@ class RequestsScheduler(commands.Cog):
 
     @notify.command(name="remove_notify_info_channels", description="Remove channels where new nofications will be printed from arr")
     @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
     async def remove_notify_info_channels(self, ctx, *args):
         if len(args) < 1:
             embed = Embed(title="Remove notify info channels - ERROR", color=0xFF0000, description="You need add at least one channel")
@@ -190,6 +198,7 @@ class RequestsScheduler(commands.Cog):
 
     @notify.command(name="remove_notify_system_error_channels", description="Remove channels where new nofications will be printed from arr")
     @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
     async def remove_notify_system_error_channels(self, ctx, *args):
         if len(args) < 1:
             embed = Embed(title="Remove notify system error channels - ERROR", color=0xFF0000, description="You need add at least one channel")

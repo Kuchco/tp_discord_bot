@@ -16,7 +16,7 @@ class Events(BaseCommand):
         # send an embed welcoming them to our guild
         channel = discord.utils.get(member.guild.text_channels, name='general')
         if channel:
-            await channel.send(embed=self.__createEmbed("Vitaj na našom serveri :wave: !", member))
+            await channel.send(embed=self.__createEmbed("Welcome :wave: !", member))
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
@@ -24,7 +24,7 @@ class Events(BaseCommand):
         # send an embed saying goodbye from our guild-
         channel = discord.utils.get(member.guild.text_channels, name='general')
         if channel:
-            await channel.send(embed=self.__createEmbed("Maj sa :cry: ", member))
+            await channel.send(embed=self.__createEmbed("Bye :cry: ", member))
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -38,15 +38,15 @@ class Events(BaseCommand):
             m, s = divmod(error.retry_after, 60)
             h, m = divmod(m, 60)
             if int(h) is 0 and int(m) is 0:
-                await ctx.send(f' Musite čakať {int(s)} sekund na použitie tohto prikazu!')
+                await ctx.send(f' You must wait {int(s)} seconds to use this command!')
             elif int(h) is 0 and int(m) is not 0:
-                await ctx.send(f' Musite čakať {int(m)} minut and {int(s)} sekund na použitie tohto prikazu!')
+                await ctx.send(f' You must wait {int(m)} minutes and {int(s)} seconds to use this command!')
             else:
                 await ctx.send(
-                    f' Musite čakať {int(h)} hodin, {int(m)} minut and {int(s)} sekund na použitie tohto prikazu!')
+                    f' You must wait{int(h)} hodin, {int(m)} minutes and {int(s)} seconds to use this command!')
         elif isinstance(error, commands.CheckFailure):
             time.sleep(2)
-            await ctx.send("Pozor! nemáte oprávnenia.")
+            await ctx.send("WARNING! you do not have permissions.")
             time.sleep(1)
         raise error
 

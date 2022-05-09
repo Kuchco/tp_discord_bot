@@ -126,13 +126,13 @@ class Twitch(commands.Cog):
                         for channel in guild.channels:
                             if title_pars[1].lower() in channel.name.lower() or "test-bot" == channel.name.lower():
                                 embed = discord.Embed(
-                                    title="Twitch stream upozornenie",
+                                    title="Twitch stream notification",
                                     description="{} {}".format(title_pars[1], title_pars[2]),
                                     colour=discord.Colour.purple()
                                 )
                                 tmp = title_pars[4] +" "+title_pars[5]
                                 embed.set_thumbnail(url=notif["thumbnail_url"].format(width=500,height=500))
-                                embed.set_footer(text="Stream začína o : "+tmp)
+                                embed.set_footer(text="The stream starts at : "+tmp)
                                 await channel.send("@everyone", embed=embed)
 
 

@@ -103,7 +103,7 @@ class Youtube(commands.Cog):
                             for channel in guild.channels:
                                 if split_title[2][:-1].lower() in channel.name.lower() or 'test-bot' == channel.name.lower():
                                     embed = discord.Embed(
-                                        title="Youtube upozornenie na upload videa",
+                                        title="Youtube video upload notification",
                                         description="{}".format(video),
                                         colour=discord.Colour.red()
                                     )
@@ -113,7 +113,7 @@ class Youtube(commands.Cog):
                                     foot = datetime.strptime(foot, "%Y-%m-%dT%H:%M:%SZ")
                                     embed.set_thumbnail(url=thumb_url['url'])
                                     embed.add_field(name='URL', value="https://youtube.com/watch?v={}".format(vid_id))
-                                    embed.set_footer(text="Video nahraté : {}".format(foot))
+                                    embed.set_footer(text="Video uploaded : {}".format(foot))
                                     await channel.send(embed=embed)
             if count != 0:
                 await self.update_db()

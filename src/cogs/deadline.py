@@ -11,13 +11,13 @@ class Deadline(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(aliases=['dl'], invoke_without_command=True, description="Príkazy pre deadline")
+    @commands.group(aliases=['dl'], invoke_without_command=True, description="Commands for deadline")
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def deadline(self, ctx):
         await ctx.invoke(self.bot.get_command("help"), entity="deadline")
 
-    @deadline.command(name="showall", description="Výpis všetkých aktívnych deadlinov")
+    @deadline.command(name="showall", description="Show all active deadlines")
     async def deadline_showall(self, ctx):
         deadlines = list(self.loops.keys())
         embed = Embed(title="Deadlines", color=0x47E9FF)
@@ -25,21 +25,22 @@ class Deadline(commands.Cog):
             embed.description = 'There are no deadlines.'
         for deadline in deadlines:
             embed.add_field(name=deadline,
-                            value="{}\nDni notifikácie: {}".format(self.loops.get(deadline)[1],
-                                                                   ', '.join(map(str, self.loops.get(deadline)[2]))
-                                                                   ),
+                            value="{}\nDays of notifications: {}".format(self.loops.get(deadline)[1],
+                                                                         ', '.join(
+                                                                             map(str, self.loops.get(deadline)[2]))
+                                                                         ),
                             inline=False)
 
         await ctx.send(embed=embed)
 
-    @deadline.command(name="end", description="Zrušenie deadlinu")
+    @deadline.command(name="end", description="Cancel a deadline")
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def deadline_end(self, ctx, deadline_name):
         if self.loops.get(deadline_name)[0]:
             self.loops.get(deadline_name)[0].cancel()
             self.loops.pop(deadline_name)
-            await ctx.send('Deadline pre {} bol zrušený'.format(deadline_name))
+            await ctx.send('Deadline for {} has been cancelled'.format(deadline_name))
 
         # for i in range(len(self.loops)):
         #     if self.loops[i].get_name() == deadline_name:
@@ -52,16 +53,16 @@ class Deadline(commands.Cog):
         #     if self.loops[i].done():
         #         print("task done")
 
-    @deadline.command(name="endall", description="Zrušenie všetkých deadlinov")
+    @deadline.command(name="endall", description="Cancel all deadlines")
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def deadline_end_all(self, ctx):
         for dl in self.loops:
             self.loops[dl][0].cancel()
         self.loops.clear()
-        await ctx.send('Všetky deadliny boli zrušené.')
+        await ctx.send('All deadlines were cancelled.')
 
-    @deadline.command(name="edit", description="Zmena deadlinu")
+    @deadline.command(name="edit", description="Edit a deadline")
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def deadline_edit(self, ctx, deadline_name, *args):
@@ -73,19 +74,20 @@ class Deadline(commands.Cog):
                 await self.deadline_create(ctx, deadline_name, args[0], args[1])
                 self.loops.get(deadline_name)[0].cancel()
             else:
-                await ctx.send('Príliš veľa argumentov.')
+                await ctx.send('Too many arguments.')
                 return
-            await ctx.send('Deadline pre {} bol zmenený'.format(deadline_name))
+            await ctx.send('Deadline for {} has been changed'.format(deadline_name))
 
-    @deadline.command(name="create", description="Vytvorenie deadlinu\n"
-                                                 "V tvare '-dl create [názov deadlinu] [dd/mm/rr HH/MM/SS]/[dd/mm/rr] "
-                                                 "[dni upozornenia](nepovinné)'\n"
-                                                 'Napr.: -dl create "Zadanie 1" "1/11/21 23:59:59" "1,2,5"')
+    @deadline.command(name="create", description="Create a deadline\n"
+                                                 "In format: '-dl create [name of deadline] [dd/mm/rr HH/MM/SS]/["
+                                                 "dd/mm/rr] "
+                                                 "[days of notifications](optional)'\n"
+                                                 'e.g.: -dl create "Assigment 1" "1/11/21 23:59:59" "1,2,5"')
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def deadline_create(self, ctx, name, *args):
         if self.loops.get(name):
-            await ctx.send('Zadaný názov deadlinu uz existuje. Skúste znova s iným názvom.')
+            await ctx.send('Specified deadline name already exists. Try again with a different name.')
             return
         try:
             if len(args[0]) > 8:
@@ -94,19 +96,19 @@ class Deadline(commands.Cog):
                 date_time = datetime.strptime(args[0], '%d/%m/%y')
                 date_time = date_time.replace(hour=23, minute=59, second=59)
         except ValueError:
-            await ctx.send('Bol zadaný zlý formát dátumu. Formát musí byť "dd/mm/rr HH/MM/SS" alebo "dd/mm/rr".')
+            await ctx.send('Wrong date format. Format must be: "dd/mm/rr HH/MM/SS" or "dd/mm/rr".')
             return
         except IndexError:
-            await ctx.send('Príliš málo argumentov.')
+            await ctx.send('Too few arguments.')
             return
         if date_time < datetime.now():
-            await ctx.send('Prosím zadávajte dátumy iba v budúcnosti.')
+            await ctx.send('Please enter only upcoming dates.')
             return
 
         if len(args) == 2:
             notif_days = list(map(int, args[1].split(',')))
         elif len(args) > 2:
-            await ctx.send('Príliš veľa argumentov.')
+            await ctx.send('Too many arguments.')
             return
         else:
             notif_days = [1]
@@ -120,23 +122,18 @@ class Deadline(commands.Cog):
         while not self.bot.is_closed():
             channel = self.bot.get_channel(902602095302148096)
 
-            print(input_datetime)
             today = datetime.now()
             if input_datetime < today:
-                print("loop ended")
                 return 1
 
             remaining_time = input_datetime - today
-            print(notif_days)
-            print(remaining_time.seconds)
             if remaining_time.days in notif_days and datetime.now().hour == 8:
                 if remaining_time.days == 1:
-                    await channel.send('Ostáva 1 deň do konca termínu pre {}'.format(name))
+                    await channel.send('Only 1 day remains till deadline {}'.format(name))
                 else:
-                    await channel.send('Ostávajú {} dni do konca termínu pre {}'.format(remaining_time.days, name))
+                    await channel.send('There are {} days left till deadline: {}'.format(remaining_time.days, name))
 
             if remaining_time.days == 0 and remaining_time.seconds <= 7200:
-                print("uz je ten den")
                 self.loops.pop(name)
                 self.loops[name] = [self.bot.loop.create_task(self.alert_deadline_last_hour(input_datetime,
                                                                                             channel,
@@ -153,7 +150,7 @@ class Deadline(commands.Cog):
 
             remaining_time = input_datetime - today
             if remaining_time.seconds <= 3600:
-                await channel.send('Ostáva menej ako jedna hodina do konca termínu pre {}'.format(name))
+                await channel.send('Less than 1 hour remains till deadline: {}'.format(name))
                 self.loops.pop(name)
                 return 1
 

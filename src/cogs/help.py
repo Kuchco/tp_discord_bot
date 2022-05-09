@@ -63,7 +63,7 @@ class Help(BaseCommand, name="Help command"):
             for cmd in next_commands:
                 desc = cmd.short_doc or cmd.description
                 signature = self.get_command_signature(cmd, ctx)
-                subcommand = "Má ďalšie príkazy" if hasattr(cmd, "all_commands") else ""
+                subcommand = "Has subcommands" if hasattr(cmd, "all_commands") else ""
 
                 commands_entry += (
                     f"• **__{cmd.name}__**\n```\n{signature}\n```\n{desc}\n"
@@ -74,7 +74,7 @@ class Help(BaseCommand, name="Help command"):
 
         await Pag(title=title, color=0xCE2029, entries=pages, length=1).start(ctx)
 
-    @commands.command(name="help", aliases=["h", "commands"], description="Help príkaz!")
+    @commands.command(name="help", aliases=["h", "commands"], description="Help command!")
     @commands.has_guild_permissions(administrator=True)
     async def help_command(self, ctx, *, entity=None):
         if not entity:
@@ -91,7 +91,7 @@ class Help(BaseCommand, name="Help command"):
                     await self.setup_help_pag(ctx, command, command.name)
 
                 else:
-                    await ctx.send("Entita sa nenašla.")
+                    await ctx.send("Entity has been not found.")
 
 
 def setup(bot):

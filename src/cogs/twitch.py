@@ -1,20 +1,50 @@
+import json
 from datetime import datetime
-
 import discord
-import requests
 from discord.ext.tasks import loop
+from discord.ext import commands
+import requests
 
-from src.core.base_command import BaseCommand
-from src.utils.json_load import read_json
+with open("cogs/config.json") as config_file:
+    config = json.load(config_file)
 
-config = read_json("cogs")
+class Twitch(commands.Cog):
 
-
-class Twitch(BaseCommand):
     def __init__(self, bot):
-        super().__init__(bot)
+        self.bot = bot
         self.check_twitch_notifications.start()
-        self.online_users = {"interes_group": None}
+        self.online_users = {}
+        self.online_users["interes_group"] = None
+        self.toggle = True
+
+    @commands.group(aliases=['tw'], invoke_without_command=True, description="Commands for twitch")
+    @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
+    async def twitch(self, ctx):
+        await ctx.invoke(self.bot.get_command('help'), entity='twitch')
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print("Twitch Cog has been loaded\n-----")
+
+    @twitch.command(name='toggle', description="Toggle twitch notifications")
+    @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
+    async def toggle_tw(self, ctx):
+        self.toggle = not self.toggle
+        if self.toggle:
+            await ctx.send("Twitch notifications are now ON")
+        else:
+            await ctx.send("Twitch notifications are now OFF")
+
+    @twitch.command(name='status', description="For checking if twitch notifs are ON/OFF")
+    @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
+    async def tw_status(self, ctx):
+        if self.toggle:
+            await ctx.send("Twitch notifications are ON")
+        else:
+            await ctx.send("Twitch notifications are OFF")
 
     def get_access_token(self):
         params = {
@@ -32,6 +62,17 @@ class Twitch(BaseCommand):
             "login": "INTERES_Group"
         }
 
+        headers = {
+            "Authorization": "Bearer {}".format(config["access_token"]),
+            "Client-id": config["client_id"]
+        }
+
+        response = requests.get("https://api.twitch.tv/helix/users", params=params, headers=headers)
+        try:
+            if response.json()['status'] == 401:
+                self.get_access_token()
+        except KeyError:
+            return {entry["login"]: entry["id"] for entry in response.json()["data"]}
         headers = {
             "Authorization": "Bearer {}".format(config["access_token"]),
             "Client-id": config["client_id"]
@@ -72,25 +113,27 @@ class Twitch(BaseCommand):
 
     @loop(seconds=90)
     async def check_twitch_notifications(self):
-        guilds = self.bot.guilds
-        notifications = self.get_notification()
-        if not guilds:
-            self.online_users["interes_group"] = None
-        for notif in notifications:
-            title_pars = notif['title'].split(" ")
-            for guild in guilds:
-                if "TP" in guild.name:  # title_pars[0][1:-1] in guild.name or
-                    for channel in guild.channels:
-                        if title_pars[1].lower() in channel.name.lower() or "test-bot" == channel.name.lower():
-                            embed = discord.Embed(
-                                title="Twitch stream upozornenie",
-                                description="{} {}".format(title_pars[1], title_pars[2]),
-                                colour=discord.Colour.purple()
-                            )
-                            tmp = title_pars[4] + " " + title_pars[5]
-                            embed.set_thumbnail(url=notif["thumbnail_url"].format(width=500, height=500))
-                            embed.set_footer(text="Stream začína o : "+tmp)
-                            await channel.send("@everyone", embed=embed)
+        if self.toggle:
+            print("tw here")
+            guilds = self.bot.guilds
+            notifications = self.get_notification()
+            if not guilds:
+                self.online_users["interes_group"] = None
+            for notif in notifications:
+                title_pars = notif['title'].split(" ")
+                for guild in guilds:
+                    if title_pars[0][1:-1] in guild.name or "TP" in guild.name:
+                        for channel in guild.channels:
+                            if title_pars[1].lower() in channel.name.lower() or "test-bot" == channel.name.lower():
+                                embed = discord.Embed(
+                                    title="Twitch stream notification",
+                                    description="{} {}".format(title_pars[1], title_pars[2]),
+                                    colour=discord.Colour.purple()
+                                )
+                                tmp = title_pars[4] +" "+title_pars[5]
+                                embed.set_thumbnail(url=notif["thumbnail_url"].format(width=500,height=500))
+                                embed.set_footer(text="The stream starts at : "+tmp)
+                                await channel.send("@everyone", embed=embed)
 
 
 def setup(bot):

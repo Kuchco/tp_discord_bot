@@ -7,7 +7,6 @@ import time
 from discord.ext import commands
 from discord import Embed
 from src.utils.json_load import read_json
-import discord
 from discord.ext.tasks import loop
 import datetime
 
@@ -549,7 +548,7 @@ class RequestsScheduler(commands.Cog):
 
     # Send notification / warning for admins
     # Something go wrong during process
-    def send_warning(self, message, guild_params):
+    async def send_warning(self, message, guild_params):
         notify_channels = guild_params['notify_info_channels']
         guilds = self.bot.guilds
         for guild in guilds:

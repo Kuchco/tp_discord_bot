@@ -1,12 +1,12 @@
-import json
 from datetime import datetime
 import discord
 from discord.ext.tasks import loop
 from discord.ext import commands
 import requests
 
-with open("cogs/config.json") as config_file:
-    config = json.load(config_file)
+from src.utils.json_load import read_json
+
+config = read_json("cogs")
 
 class Twitch(commands.Cog):
 

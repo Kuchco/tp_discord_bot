@@ -41,17 +41,8 @@ class Deadline(commands.Cog):
             self.loops.get(deadline_name)[0].cancel()
             self.loops.pop(deadline_name)
             await ctx.send('Deadline for {} has been cancelled'.format(deadline_name))
-
-        # for i in range(len(self.loops)):
-        #     if self.loops[i].get_name() == deadline_name:
-        #         print("deadline ukonceny")
-        #         self.loops[i].cancel()
-        #
-        #     if self.loops[i].cancelled():
-        #         print("task canceled")
-        #
-        #     if self.loops[i].done():
-        #         print("task done")
+        else:
+            await ctx.send('Deadline for {} doesn\'t exist'.format(deadline_name))
 
     @deadline.command(name="endall", description="Cancel all deadlines")
     @commands.guild_only()
@@ -79,7 +70,6 @@ class Deadline(commands.Cog):
                 return
             if not failed == -1:
                 await ctx.send('Deadline for {} has been changed'.format(deadline_name))
-                self.loops.get(deadline_name)[0].cancel()
         else:
             await ctx.send('Deadline for {} doesn\'t exist'.format(deadline_name))
 
@@ -92,9 +82,9 @@ class Deadline(commands.Cog):
     @commands.has_guild_permissions(administrator=True)
     async def deadline_create(self, ctx, name, *args):
         if self.loops.get(name):
-            if args[2] and args[2] == 1:
-                pass
-            else:
+            try:
+                args[2] == 1
+            except IndexError:
                 await ctx.send('Specified deadline name already exists. Try again with a different name.')
                 return
         try:
@@ -119,8 +109,12 @@ class Deadline(commands.Cog):
             elif len(args) > 2:
                 if args[2] == 1 and args[1]:
                     notif_days = list(map(int, args[1].split(',')))
+                    self.loops.get(name)[0].cancel()
+                    self.loops.pop(name)
                 elif args[2] == 1 and not args[1]:
                     notif_days = [1]
+                    self.loops.get(name)[0].cancel()
+                    self.loops.pop(name)
                 else:
                     await ctx.send('Too many arguments.')
                     return -1
@@ -132,17 +126,15 @@ class Deadline(commands.Cog):
 
         notif_days.sort()
         await ctx.send('Deadline for {} is: {}'.format(name, date_time))
-        self.loops[name] = [self.bot.loop.create_task(self.alert_deadline(date_time, notif_days, name), name=name),
+        self.loops[name] = [self.bot.loop.create_task(self.alert_deadline(date_time, notif_days, name, ctx), name=name),
                             date_time.strftime("%d-%m-%Y %H:%M:%S"), notif_days]
 
-    async def alert_deadline(self, input_datetime, notif_days, name):
+    async def alert_deadline(self, input_datetime, notif_days, name, channel):
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
-            channel = self.bot.get_channel(902602095302148096)
-
             today = datetime.now()
             if input_datetime < today:
-                return 1
+                return
 
             remaining_time = input_datetime - today
             if remaining_time.days in notif_days and datetime.now().hour == 8:
@@ -152,25 +144,30 @@ class Deadline(commands.Cog):
                     await channel.send('There are {} days left till deadline: {}'.format(remaining_time.days, name))
 
             if remaining_time.days == 0 and remaining_time.seconds <= 7200:
+                self.loops.get(name)[0].cancel()
                 self.loops.pop(name)
                 self.loops[name] = [self.bot.loop.create_task(self.alert_deadline_last_hour(input_datetime,
                                                                                             channel,
                                                                                             name)),
-                                    input_datetime.strftime("%d-%m-%Y %H:%M:%S")]
-                return 1
+                                    input_datetime.strftime("%d-%m-%Y %H:%M:%S"), notif_days]
+                return
 
             await asyncio.sleep(3600)
 
     async def alert_deadline_last_hour(self, input_datetime, channel, name):
         await self.bot.wait_until_ready()
+        less_than_hours = False
         while not self.bot.is_closed():
             today = datetime.now()
-
             remaining_time = input_datetime - today
-            if remaining_time.seconds <= 3600:
+            if remaining_time.seconds <= 3600 and not less_than_hours:
+                less_than_hours = True
                 await channel.send('Less than 1 hour remains till deadline: {}'.format(name))
+            if remaining_time.seconds <= 60:
+                self.loops.get(name)[0].cancel()
                 self.loops.pop(name)
-                return 1
+                await channel.send('Deadline for {} has expired and was removed'.format(name))
+                return
 
             await asyncio.sleep(60)
 

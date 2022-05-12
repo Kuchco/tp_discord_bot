@@ -38,7 +38,7 @@ class Question(BaseCommand):
         await self.__startThreadActivityReSpawner()
 
     @commands.guild_only()
-    @commands.group(aliases=["q"], invoke_without_command=True, description="Group of commands determined for the Q&A system")
+    @commands.group(aliases=["q"], invoke_without_command=True, description="Group2 of commands determined for the Q&A system")
     async def question(self, context: discord.ext.commands.context.Context) -> None:
         await context.invoke(self.bot.get_command("help"), entity="question")
 

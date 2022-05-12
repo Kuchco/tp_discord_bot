@@ -68,15 +68,20 @@ class Deadline(commands.Cog):
     async def deadline_edit(self, ctx, deadline_name, *args):
         if self.loops.get(deadline_name):
             if len(args) == 1:
-                await self.deadline_create(ctx, deadline_name, args[0])
-                self.loops.get(deadline_name)[0].cancel()
+                failed = await self.deadline_create(ctx, deadline_name, args[0], False, 1)
             elif len(args) == 2:
-                await self.deadline_create(ctx, deadline_name, args[0], args[1])
-                self.loops.get(deadline_name)[0].cancel()
-            else:
+                failed = await self.deadline_create(ctx, deadline_name, args[0], args[1], 1)
+            elif len(args) > 2:
                 await ctx.send('Too many arguments.')
                 return
-            await ctx.send('Deadline for {} has been changed'.format(deadline_name))
+            else:
+                await ctx.send('Too few arguments.')
+                return
+            if not failed == -1:
+                await ctx.send('Deadline for {} has been changed'.format(deadline_name))
+                self.loops.get(deadline_name)[0].cancel()
+        else:
+            await ctx.send('Deadline for {} doesn\'t exist'.format(deadline_name))
 
     @deadline.command(name="create", description="Create a deadline\n"
                                                  "In format: '-dl create [name of deadline] [dd/mm/rr HH/MM/SS]/["
@@ -87,8 +92,11 @@ class Deadline(commands.Cog):
     @commands.has_guild_permissions(administrator=True)
     async def deadline_create(self, ctx, name, *args):
         if self.loops.get(name):
-            await ctx.send('Specified deadline name already exists. Try again with a different name.')
-            return
+            if args[2] and args[2] == 1:
+                pass
+            else:
+                await ctx.send('Specified deadline name already exists. Try again with a different name.')
+                return
         try:
             if len(args[0]) > 8:
                 date_time = datetime.strptime(args[0], '%d/%m/%y %H:%M:%S')
@@ -97,22 +105,32 @@ class Deadline(commands.Cog):
                 date_time = date_time.replace(hour=23, minute=59, second=59)
         except ValueError:
             await ctx.send('Wrong date format. Format must be: "dd/mm/rr HH/MM/SS" or "dd/mm/rr".')
-            return
+            return -1
         except IndexError:
             await ctx.send('Too few arguments.')
-            return
+            return -1
         if date_time < datetime.now():
             await ctx.send('Please enter only upcoming dates.')
-            return
+            return -1
 
-        if len(args) == 2:
-            notif_days = list(map(int, args[1].split(',')))
-        elif len(args) > 2:
-            await ctx.send('Too many arguments.')
-            return
-        else:
-            notif_days = [1]
+        try:
+            if len(args) == 2:
+                notif_days = list(map(int, args[1].split(',')))
+            elif len(args) > 2:
+                if args[2] == 1 and args[1]:
+                    notif_days = list(map(int, args[1].split(',')))
+                elif args[2] == 1 and not args[1]:
+                    notif_days = [1]
+                else:
+                    await ctx.send('Too many arguments.')
+                    return -1
+            else:
+                notif_days = [1]
+        except ValueError:
+            await ctx.send('Wrong days of notifications format. Format must be: "[number1], [number2], ...".')
+            return -1
 
+        notif_days.sort()
         await ctx.send('Deadline for {} is: {}'.format(name, date_time))
         self.loops[name] = [self.bot.loop.create_task(self.alert_deadline(date_time, notif_days, name), name=name),
                             date_time.strftime("%d-%m-%Y %H:%M:%S"), notif_days]

@@ -7,6 +7,7 @@ from discord import Embed
 
 class Deadline(commands.Cog):
     loops = {}
+    channel = 0
 
     def __init__(self, bot):
         self.bot = bot
@@ -16,6 +17,30 @@ class Deadline(commands.Cog):
     @commands.has_guild_permissions(administrator=True)
     async def deadline(self, ctx):
         await ctx.invoke(self.bot.get_command("help"), entity="deadline")
+
+    @deadline.command(name="channel", description="Set default channel for notifications\n"
+                                                  "If no channel is set, notifications will pop up in the channel where"
+                                                  " a deadline was created")
+    @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
+    async def set_channel(self, ctx, channel_id):
+        try:
+            self.channel = self.bot.get_channel(int(channel_id))
+            await ctx.send('Successfully changed the default channel for deadline notifications.')
+            await self.channel.send('This channel has been set as a default channel for deadline notifications.')
+        except (AttributeError, ValueError):
+            self.channel = 0
+            await ctx.send('Specified channel id doesn\'t exist.')
+            return
+
+        for dl in self.loops:
+            self.loops[dl][0].cancel()
+            date_time = datetime.strptime(self.loops[dl][1], "%d-%m-%Y %H:%M:%S")
+            notif_days = self.loops[dl][2]
+            self.loops[dl] = [self.bot.loop.create_task(self.alert_deadline(date_time, notif_days, dl,
+                                                                            ctx if self.channel == 0 else self.channel),
+                                                        name=dl),
+                              self.loops[dl][1], notif_days]
 
     @deadline.command(name="showall", description="Show all active deadlines")
     async def deadline_showall(self, ctx):
@@ -40,9 +65,9 @@ class Deadline(commands.Cog):
         if self.loops.get(deadline_name)[0]:
             self.loops.get(deadline_name)[0].cancel()
             self.loops.pop(deadline_name)
-            await ctx.send('Deadline for {} has been cancelled'.format(deadline_name))
+            await ctx.send('Deadline for {} has been cancelled.'.format(deadline_name))
         else:
-            await ctx.send('Deadline for {} doesn\'t exist'.format(deadline_name))
+            await ctx.send('Deadline for {} doesn\'t exist.'.format(deadline_name))
 
     @deadline.command(name="endall", description="Cancel all deadlines")
     @commands.guild_only()
@@ -69,9 +94,9 @@ class Deadline(commands.Cog):
                 await ctx.send('Too few arguments.')
                 return
             if not failed == -1:
-                await ctx.send('Deadline for {} has been changed'.format(deadline_name))
+                await ctx.send('Deadline for {} has been changed.'.format(deadline_name))
         else:
-            await ctx.send('Deadline for {} doesn\'t exist'.format(deadline_name))
+            await ctx.send('Deadline for {} doesn\'t exist.'.format(deadline_name))
 
     @deadline.command(name="create", description="Create a deadline\n"
                                                  "In format: '-dl create [name of deadline] [dd/mm/rr HH/MM/SS]/["
@@ -126,7 +151,9 @@ class Deadline(commands.Cog):
 
         notif_days.sort()
         await ctx.send('Deadline for {} is: {}'.format(name, date_time))
-        self.loops[name] = [self.bot.loop.create_task(self.alert_deadline(date_time, notif_days, name, ctx), name=name),
+        self.loops[name] = [self.bot.loop.create_task(self.alert_deadline(date_time, notif_days, name,
+                                                                          ctx if self.channel == 0 else self.channel),
+                                                      name=name),
                             date_time.strftime("%d-%m-%Y %H:%M:%S"), notif_days]
 
     async def alert_deadline(self, input_datetime, notif_days, name, channel):
@@ -139,9 +166,9 @@ class Deadline(commands.Cog):
             remaining_time = input_datetime - today
             if remaining_time.days in notif_days and datetime.now().hour == 8:
                 if remaining_time.days == 1:
-                    await channel.send('Only 1 day remains till deadline {}'.format(name))
+                    await channel.send('Only 1 day remains till deadline {}.'.format(name))
                 else:
-                    await channel.send('There are {} days left till deadline: {}'.format(remaining_time.days, name))
+                    await channel.send('There are {} days left till deadline: {}.'.format(remaining_time.days, name))
 
             if remaining_time.days == 0 and remaining_time.seconds <= 7200:
                 self.loops.get(name)[0].cancel()
@@ -162,11 +189,11 @@ class Deadline(commands.Cog):
             remaining_time = input_datetime - today
             if remaining_time.seconds <= 3600 and not less_than_hours:
                 less_than_hours = True
-                await channel.send('Less than 1 hour remains till deadline: {}'.format(name))
+                await channel.send('Less than 1 hour remains till deadline: {}.'.format(name))
             if remaining_time.seconds <= 60:
                 self.loops.get(name)[0].cancel()
                 self.loops.pop(name)
-                await channel.send('Deadline for {} has expired and was removed'.format(name))
+                await channel.send('Deadline for {} has expired and was removed.'.format(name))
                 return
 
             await asyncio.sleep(60)

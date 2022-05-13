@@ -44,7 +44,7 @@ class Question(BaseCommand):
 
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
-    @question.command(aliases=["a"], name="answer", description="Answers (resolves) question, usable only inside active question thread. Wrap answer into \" for question with spaces")
+    @question.command(aliases=["a"], name="answer", description="Answers (resolves) question, usable only inside active question thread. Wrap answer with (\" - Quotation mark) for question with spaces")
     async def question_answer(self, context: discord.ext.commands.context.Context, answer) -> None:
         question = await self.bot.question.find_by_id(context.channel.id)
         if question is not None:
@@ -90,7 +90,7 @@ class Question(BaseCommand):
             await self.__sendErrorMessage(context, self.errorUsableOnlyInThread)
 
     @commands.guild_only()
-    @question.command(aliases=["c"], name="create", description="Creates new question, wrap question into \" for question with spaces")
+    @question.command(aliases=["c"], name="create", description="Creates new question, wrap question with (\" - Quotation mark) for question with spaces")
     async def question_create(self, context: discord.ext.commands.context.Context, question) -> None:
         channel = await self.__getActiveQuestionsChannel(context.guild)
         question_embed = discord.Embed(

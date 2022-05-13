@@ -93,10 +93,11 @@ class Question(BaseCommand):
     @question.command(aliases=["c"], name="create", description="Creates new question, wrap question with (\" - Quotation mark) for question with spaces")
     async def question_create(self, context: discord.ext.commands.context.Context, question) -> None:
         channel = await self.__getActiveQuestionsChannel(context.guild)
+        question_text = question if question[-1] == "?" else question + "?"
         question_embed = discord.Embed(
             color=self.bot.colors["BLUE"],
             description=f"{context.author.mention} " + self.question_prefix +
-                        (question if question[-1] == "?" else question + "?").capitalize() +
+                        question_text[0].upper() + question_text[1:] +
                         self.question_postfix,
             title="Hi everyone, we need your help with the following question"
         )
@@ -163,7 +164,7 @@ class Question(BaseCommand):
     async def __getQuestionAnswerEmbed(self, context: discord.ext.commands.context.Context, question_id: int, answers: [], title_prefix: string = "") -> discord.Embed:
         merged_answer = ""
         for answer in answers:
-            merged_answer += "\n - " + answer.capitalize()
+            merged_answer += "\n - " + answer[0].upper() + answer[1:]
 
         raw_question_message = (await (await self.__getActiveQuestionsChannel(context.guild)).fetch_message(question_id)).embeds[0].description
         message_start = raw_question_message.find(self.question_prefix) + len(self.question_prefix)

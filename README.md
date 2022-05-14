@@ -30,5 +30,7 @@ implementácia musí byť publikovaná ako Docker image.
 - Bc. Lukáš Löbl 
 ## Web stránka zápisníc
 https://tp120212022.bubbleapps.io/version-test
+## User guide
+https://luxao.github.io/gabot/
 ## Automatic deployment to Heroku
  - [Guide here](https://stackoverflow.com/a/71905270)

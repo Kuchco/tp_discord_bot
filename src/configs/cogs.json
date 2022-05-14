@@ -1,10 +1,10 @@
 {
-  "twitch_client_id": "v5flwnqefp05lawp1qnf1wezf40omv",
-  "twitch_client_secret": "jth4wg1np4c2la92b11ir1nus3wxzo",
-  "twitch_access_token": "p1m7tyx6j90nponl3iqck0l0p047jz",
-  "watchlist": ["interes_group"],
-  "youtube_api_key": "AIzaSyAHhIknXnYCl3kWy8_5xrSCCE3Bd1lH1bk",
-  "DISCORD_TOKEN": "ODk3MTM1NDEyNzMxMDUyMDQz.GIvE8w.wavJY0VutwCMC1LG_QYPuQ6ceQWiqGu30I5gEU",
-  "DISCORD_GUILD": "TP1",
-  "mongo": "mongodb+srv://discordBot:discord2021Bot@discordbot.x4bci.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+  "twitch_client_id": "[ENTER YOUR TWITCH CLIENT ID]",
+  "twitch_client_secret": "[ENTER YOUR TWITCH CLIENT SECRET]",
+  "twitch_access_token": "[ENTER YOUR TWITCH ACCESS TOKEN]",
+  "watchlist": ["[ENTER NAMES OF TWITCH CHANNELS]"],
+  "youtube_api_key": "[ENTER YOUR YOUTUBE API KEY]",
+  "DISCORD_TOKEN": "[ENTER YOUR DISCORD TOKEN]",
+  "DISCORD_GUILD": "[ENTER YOUR DISCORD GUILD]",
+  "mongo": "[ENTER YOUR MONGO-DB CONNECTION]"
 }

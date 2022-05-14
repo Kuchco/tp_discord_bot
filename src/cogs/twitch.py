@@ -48,14 +48,14 @@ class Twitch(commands.Cog):
 
     def get_access_token(self):
         params = {
-            "client_id": config['client_id'],
-            "client_secret": config['client_secret'],
+            "client_id": config['twitch_client_id'],
+            "client_secret": config['twitch_client_secret'],
             "grant_type": "client_credentials"
         }
 
         response = requests.post("https://id.twitch.tv/oauth2/token", params=params)
         access_token = response.json()["access_token"]
-        config["access_token"] = access_token
+        config["twitch_access_token"] = access_token
 
     def check_user(self):
         params = {
@@ -63,8 +63,8 @@ class Twitch(commands.Cog):
         }
 
         headers = {
-            "Authorization": "Bearer {}".format(config["access_token"]),
-            "Client-id": config["client_id"]
+            "Authorization": "Bearer {}".format(config["twitch_access_token"]),
+            "Client-id": config["twitch_client_id"]
         }
 
         response = requests.get("https://api.twitch.tv/helix/users", params=params, headers=headers)
@@ -74,8 +74,8 @@ class Twitch(commands.Cog):
         except KeyError:
             return {entry["login"]: entry["id"] for entry in response.json()["data"]}
         headers = {
-            "Authorization": "Bearer {}".format(config["access_token"]),
-            "Client-id": config["client_id"]
+            "Authorization": "Bearer {}".format(config["twitch_access_token"]),
+            "Client-id": config["twitch_client_id"]
         }
 
         response = requests.get("https://api.twitch.tv/helix/users", params=params, headers=headers)
@@ -88,8 +88,8 @@ class Twitch(commands.Cog):
         }
 
         headers = {
-            "Authorization": "Bearer {}".format(config["access_token"]),
-            "Client-id": config["client_id"]
+            "Authorization": "Bearer {}".format(config["twitch_access_token"]),
+            "Client-id": config["twitch_client_id"]
         }
 
         response = requests.get("https://api.twitch.tv/helix/streams", params=params, headers=headers)

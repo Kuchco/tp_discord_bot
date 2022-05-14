@@ -7,13 +7,13 @@ from discord.ext import commands
 
 from src.utils.json_load import read_json
 
-config = read_json("yt")
+config = read_json("cogs")
 
 class Youtube(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.youtube = build('youtube', 'v3', developerKey=config['api_key'])
+        self.youtube = build('youtube', 'v3', developerKey=config['youtube_api_key'])
         self.videos = {}
         self.db_videos = {}
         self.check_youtube_notifications.start()

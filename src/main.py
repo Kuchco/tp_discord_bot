@@ -14,7 +14,7 @@ cwd = Path(__file__).parents[0]
 cwd = str(cwd)
 print(f"{cwd}\n-----")
 
-secret = read_json("secret")
+secret = read_json("cogs")
 GUILD = secret['DISCORD_GUILD']
 logging.basicConfig(level=logging.INFO)
 intents = discord.Intents.default()

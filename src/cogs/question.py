@@ -224,6 +224,9 @@ class Question(BaseCommand):
                 continue
 
             channel = self.bot.get_channel(guild_question_channel_record["active_channel_id"])
+            if channel is None:
+                continue
+
             try:
                 message = await channel.fetch_message(question["_id"])
                 if message.flags.has_thread:

@@ -1,14 +1,16 @@
-import requests
-from apscheduler.schedulers.background import BackgroundScheduler
-from pytz import utc
+import datetime
 import json
 import sys
 import time
-from discord.ext import commands
+
+import requests
+from apscheduler.schedulers.background import BackgroundScheduler
 from discord import Embed
-from src.utils.json_load import read_json
+from discord.ext import commands
 from discord.ext.tasks import loop
-import datetime
+
+from src.utils.json_load import read_json, write_json
+
 
 class RequestsScheduler(commands.Cog):
     def __init__(self, bot):
@@ -446,8 +448,7 @@ class RequestsScheduler(commands.Cog):
             return -1
 
     def update_json(self, content, json_file_name):
-        with open("configs/" + json_file_name +".json", "w") as outfile:
-            outfile.write(self.return_serialize_json(content))
+        write_json(self.return_serialize_json(content), json_file_name)
 
     # Create and return a formatted string of the Python JSON object
     def return_serialize_json(self, obj):
@@ -456,8 +457,7 @@ class RequestsScheduler(commands.Cog):
 
     # Clear JSON file (write empty array)
     def clear_json_file(self, json_file_name):
-        with open("configs/" + json_file_name + ".json", "w") as outfile:
-            outfile.write(self.return_serialize_json([]))
+        write_json(self.return_serialize_json([]), json_file_name)
 
     def return_status_code_message(status_code):
         if status_code == 200:
